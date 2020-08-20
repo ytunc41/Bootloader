@@ -22,6 +22,7 @@ namespace Bootloader
          * - Hex dosya acma islemleri yapilmistir.
          * - Hex file parse uygulanmistir.
          * - Data yigini olusturulup veriler sozlukte saklanmistir.
+         * - ....
          * 
          */
 
