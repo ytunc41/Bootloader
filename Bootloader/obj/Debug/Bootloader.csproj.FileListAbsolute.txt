@@ -1,0 +1,13 @@
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\bin\Debug\Bootloader.exe.config
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\bin\Debug\Bootloader.exe
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\bin\Debug\Bootloader.pdb
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.csprojAssemblyReference.cache
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.Properties.Resources.resources
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.GenerateResource.cache
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CoreCompileInputs.cache
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.exe
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.pdb
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\bin\Debug\HidLibrary.dll
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\bin\Debug\HidLibrary.pdb
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete
+C:\Users\yusuf\Documents\C# Project\Bootloader\Bootloader\obj\Debug\Bootloader.MainForm.resources
