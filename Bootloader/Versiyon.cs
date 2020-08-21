@@ -13,8 +13,14 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.0";
+            _versiyon = "v1.0.1";
         }
+
+        /* Versiyon: 1.0.1
+         * Tarih: 21.08.2020
+         * 
+         * - Veri yiginina data ekleme algoritmasi guncellenmistir.
+         */
 
         /* Versiyon: 1.0.0
          * Tarih: 20.08.2020
@@ -22,8 +28,6 @@ namespace Bootloader
          * - Hex dosya acma islemleri yapilmistir.
          * - Hex file parse uygulanmistir.
          * - Data yigini olusturulup veriler sozlukte saklanmistir.
-         * - ....
-         * 
          */
 
     }

@@ -42,6 +42,11 @@ namespace Bootloader
 
         }
 
+        public void AddHT(int addr, List<byte> data)
+        {
+            _dataChunk.Add(addr, data);
+        }
+
         public void ClearAll()
         {
             _dataChunk.Clear();

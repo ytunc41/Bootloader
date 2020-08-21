@@ -152,26 +152,29 @@ namespace Bootloader
 
             //string filePath = @"C:\Users\yusuf\Desktop\AutonomousFlightController.hex";
             //string filePath = @"C:\Users\yusuf\Desktop\BLINK_LED_13.hex";
-            //string filePath = @"C:\Users\yusuf\Desktop\Flash.hex";
-            string filePath = @"C:\Users\kouhu\STM32CubeIDE\workspace_1.3.0\UART_TX_RX_Interrupts\Debug\UART_TX_RX_Interrupts.hex";
+            string filePath = @"C:\Users\yusuf\Desktop\Flash.hex";
+            //string filePath = @"C:\Users\yusuf\Desktop\USB_HID.hex";
             HexConvertToDataChunk(filePath);
+            TabFileTextProcess(filePath);
+            DataChunkToWriteListView();
 
-            char[] chars = {'\\'};
+        }
+
+        private void TabFileTextProcess(string filePath)
+        {
+            char[] chars = { '\\' };
             string[] words = filePath.Split(chars);
             string fileText = words[words.Length - 1].ToString();
             tabFile.Text = "File: " + fileText;
             string addrMax = "0x" + (dataChunk.datas.Keys.Max() + dataChunk.datas[dataChunk.datas.Keys.Max()].Count).ToString("X8");
             string addr = "0x" + (dataChunk.baseAddr << 16).ToString("X8");
             lblFileInfo.Text = "[" + fileText + "]" + ",  " + "Address Range: " + "[" + addr + " " + addrMax + "]";
-
-            DataChunkToWriteListView();
-
         }
 
         private void DataChunkToWriteListView()
         {
             listViewFile.Clear();
-            listViewFile.Columns.Add("Address",90);
+            listViewFile.Columns.Add("Address", 90);
             for (int i = 0; i < 16; i++)
             {
                 if (cmbDataWidth.SelectedIndex == 0)
@@ -182,18 +185,18 @@ namespace Bootloader
                 {
                     if (i % 2 == 1)
                     {
-                        listViewFile.Columns.Add((i-1).ToString("X"), 70);
+                        listViewFile.Columns.Add((i - 1).ToString("X"), 70);
                     }
                 }
                 else if (cmbDataWidth.SelectedIndex == 2)
                 {
                     if (i % 4 == 3)
                     {
-                        listViewFile.Columns.Add((i-3).ToString("X"), 100);
+                        listViewFile.Columns.Add((i - 3).ToString("X"), 100);
                     }
                 }
             }
-            
+
 
             int dataCount = 16;
             int count = dataChunk.datas.Keys.Count;
@@ -238,7 +241,7 @@ namespace Bootloader
                 lst = new ListViewItem(str);
                 listViewFile.Items.Add(lst);
             }
-            
+
         }
 
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
@@ -247,7 +250,7 @@ namespace Bootloader
                 DataChunkToWriteListView();
             else
                 MessageBox.Show("First of all, upload/open hex file.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            
+
         }
 
         private void WriteDataGridView()
@@ -266,7 +269,7 @@ namespace Bootloader
             int a = dataGrid.Rows.Add(count);
             int addrMax = dataChunk.datas.Keys.Max();
             int addr = (dataChunk.baseAddr << 16);
-            for (a = 0; a < count; a++, addr+=dataCount)
+            for (a = 0; a < count; a++, addr += dataCount)
             {
 
                 //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
@@ -280,7 +283,7 @@ namespace Bootloader
                     {
                         break;
                     }
-                    
+
                 }
             }
 
@@ -291,14 +294,9 @@ namespace Bootloader
 
         }
 
-
         private void HexConvertToDataChunk(string _filePath)
         {
-            var fileContent = string.Empty;
-            var filePath = string.Empty;
-            var readLine = string.Empty;
-            filePath = _filePath;
-
+            string filePath = _filePath;
             string line = string.Empty;
             int lineNum = 0;
             int baseAddress = 0;
@@ -334,36 +332,24 @@ namespace Bootloader
                             byte[] data = new byte[sizeData];
                             checkSum += ReadData(dataRaw, ref data);    // returnVal = check sums.
 
-
                             if (type == 0)
                             {
-                                /*dataChunk.startAddr = startAddress;
-                                dataChunk.AddByte(data);*/
-                                // Bu şekilde veriler toplandığında start adreslerine bağlı olarak sözlüğe almakta.
-                                // Yani 16 byte data sonrasında 12 byte data geldiğinde sözlükte adresleri 16 ve 12 diye başlıyor.
-                                // Hepsinin 16 olarak toplanması için yeni bir sözlük oluşturulup tüm adreslerin tek bayt şekilde depolandığı bir sözlük oluşturulmalıdır.
-                                // Bu şekilde verilerin yazdırılması istendiğinde daha kolay olacaktır.
-                                // Veri yığınını 16 bayt şeklinde sıralamak için de kullanılır.
-                                // Aşağıdaki gibi döngüyle her bir adresin 16 bayt karşılığı toplanır.
-
                                 int adr = startAddress;
-                                for (int i = 0; i < data.Length; i++)
-                                {
-                                    ht.Add(adr++, data[i]);
-                                }
-
+                                adr = (dataChunk.baseAddr << 16) + startAddress;
+                                for (int i = 0; i < data.Length; i++, adr++)
+                                    ht.Add(adr, data[i]);
                             }
                             else if (type == 1)
                             {
                                 // End of file
+                                Console.WriteLine("Line " + lineNum + ": End of file.");
                             }
                             else if (type == 4)
                             {
                                 // Extended linear address record data field
-
                                 if (sizeData == 2)
                                 {
-                                    baseAddress = data[0] << 8 + data[1];
+                                    baseAddress = (data[0] << 8) + data[1];
                                     dataChunk.baseAddr = baseAddress;
                                 }
                                 else
@@ -390,7 +376,7 @@ namespace Bootloader
                             if (chk == check_sum)
                             {
                                 // Everything is ok.
-                                Console.WriteLine("Line: " + lineNum + " Everything is ok.");
+                                //Console.WriteLine("Line: " + lineNum + " Everything is ok.");
 
                                 startAddressList.Add(startAddress);
                             }
@@ -400,6 +386,10 @@ namespace Bootloader
                                 break;
                             }
                         }   /* if (line[0] == ':') */
+                        else if (line[0] == ';')
+                        {
+                            Console.WriteLine("Line " + lineNum + ": " + line.Substring(1));
+                        }
                         else
                         {
                             MessageBox.Show("Error Line " + lineNum + ": At the beginning of the line is missing \":\" ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -416,23 +406,35 @@ namespace Bootloader
             }   /* using (var inputFile = new StreamReader(File.OpenRead(filePath))) */
 
 
-            int addr = 0;
-            List<byte> list;
-            while (addr < ht.Count)
+            int maxKey = 0, minKey = 0x0fffffff;
+            foreach (DictionaryEntry item in ht)
             {
-                list = new List<byte>();
-                dataChunk.startAddr = addr;
-                for (int j = 0; j < dataCount; j++, addr++)
+                if ((int)item.Key > maxKey)
+                    maxKey = (int)item.Key;
+                if ((int)item.Key < minKey)
+                    minKey = (int)item.Key;
+            }
+
+            int cnt = minKey;
+            List<byte> list;
+            while (cnt < maxKey)
+            {
+                int ct1 = cnt;
+                if (ct1 % 16 != 0)
                 {
-                    if (addr < ht.Count)
-                    {
-                        if (ht[addr] != null)
-                            list.Add((byte)ht[addr]);
-                    }
-                    else
-                        break;
+                    cnt++;
+                    continue;
                 }
-                dataChunk.AddByte(list);
+                list = new List<byte>();
+                for (int j = 0; j < dataCount; j++, cnt++)
+                {
+                    if (ht.ContainsKey(cnt))
+                        list.Add((byte)ht[cnt]);
+                    else
+                        continue;
+                }
+                if (ht.ContainsKey(ct1))
+                    dataChunk.AddHT(ct1, list);
             }
 
 
@@ -457,6 +459,6 @@ namespace Bootloader
             return check;
         }
 
-        
+
     }
 }
