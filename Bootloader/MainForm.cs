@@ -132,6 +132,7 @@ namespace Bootloader
 
 
         DataChunk dataChunk = new DataChunk();
+
         private void btnOpen_Click(object sender, EventArgs e)
         {
             //using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -144,16 +145,18 @@ namespace Bootloader
             //    if (openFileDialog.ShowDialog() == DialogResult.OK)
             //    {
             //        string filePath = openFileDialog.FileName;
-
-            //        HexConvertToDataChunk(filePath);
+            //        // dosya ismi alindiktan sonra islemler burada yapilacak!
+            //        
             //    }
             //}
 
 
             //string filePath = @"C:\Users\yusuf\Desktop\AutonomousFlightController.hex";
             //string filePath = @"C:\Users\yusuf\Desktop\BLINK_LED_13.hex";
-            string filePath = @"C:\Users\yusuf\Desktop\Flash.hex";
+            //string filePath = @"C:\Users\yusuf\Desktop\Flash.hex";
             //string filePath = @"C:\Users\yusuf\Desktop\USB_HID.hex";
+            //string filePath = @"C:\Users\yusuf\Desktop\led_yak.hex";
+            string filePath = @"C:\Users\yusuf\Desktop\fff.hex";
             HexConvertToDataChunk(filePath);
             TabFileTextProcess(filePath);
             DataChunkToWriteListView();
@@ -174,6 +177,8 @@ namespace Bootloader
         private void DataChunkToWriteListView()
         {
             listViewFile.Clear();
+
+            #region Adding column headers according to bits. (8,16,32 bits)
             listViewFile.Columns.Add("Address", 90);
             for (int i = 0; i < 16; i++)
             {
@@ -185,33 +190,38 @@ namespace Bootloader
                 {
                     if (i % 2 == 1)
                     {
-                        listViewFile.Columns.Add((i - 1).ToString("X"), 70);
+                        listViewFile.Columns.Add((i - 1).ToString("X"), 65);
                     }
                 }
                 else if (cmbDataWidth.SelectedIndex == 2)
                 {
                     if (i % 4 == 3)
                     {
-                        listViewFile.Columns.Add((i - 3).ToString("X"), 100);
+                        listViewFile.Columns.Add((i - 3).ToString("X"), 90);
                     }
                 }
             }
-
+            #endregion
 
             int dataCount = 16;
             int count = dataChunk.datas.Keys.Count;
             int addrMax = dataChunk.datas.Keys.Max() + dataChunk.datas[dataChunk.datas.Keys.Max()].Count;
-            int addr = (dataChunk.baseAddr << 16);
+            int addrMin = dataChunk.datas.Keys.Min();
+            int addr = addrMin;
             ListViewItem lst;
             List<string> listString;
 
-            for (int i = 0; i < count; i++, addr += dataCount)
+            for (int i = 0; addr < addrMax; i++, addr += dataCount)
             {
+                if (dataChunk.datas.ContainsKey(addr) == false)
+                {
+                    continue;
+                }
                 listString = new List<string>();
                 listString.Add("0x" + addr.ToString("X8"));
-                for (int j = 0, k = 0; j < dataChunk.datas[addr].Count; j++, k++)
+                for (int j = 0; j < dataChunk.datas[addr].Count; j++)
                 {
-                    if ((addr + k) < addrMax)
+                    if ((addr + j) < addrMax)
                     {
                         if (cmbDataWidth.SelectedIndex == 0)    // 8 bits
                         {
@@ -250,7 +260,6 @@ namespace Bootloader
                 DataChunkToWriteListView();
             else
                 MessageBox.Show("First of all, upload/open hex file.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
         }
 
         private void WriteDataGridView()
@@ -299,11 +308,8 @@ namespace Bootloader
             string filePath = _filePath;
             string line = string.Empty;
             int lineNum = 0;
-            int baseAddress = 0;
-            int checkSum = 0;
             int dataCount = 16;
 
-            ArrayList startAddressList = new ArrayList();
             Hashtable ht = new Hashtable();
             dataChunk.ClearAll();
 
@@ -319,7 +325,7 @@ namespace Bootloader
                         {// Line parsing
 
                             // Reset checkSum
-                            checkSum = 0;
+                            int checkSum = 0;
 
                             int sizeData = Read(line, 1, 1);
                             checkSum += sizeData & 0xff;
@@ -344,12 +350,16 @@ namespace Bootloader
                                 // End of file
                                 Console.WriteLine("Line " + lineNum + ": End of file.");
                             }
+                            else if (type == 2)
+                            {
+                                // Extended segment address record data field
+                            }
                             else if (type == 4)
                             {
                                 // Extended linear address record data field
                                 if (sizeData == 2)
                                 {
-                                    baseAddress = (data[0] << 8) + data[1];
+                                    int baseAddress = (data[0] << 8) + data[1];
                                     dataChunk.baseAddr = baseAddress;
                                 }
                                 else
@@ -365,11 +375,11 @@ namespace Bootloader
                             else
                             {
                                 MessageBox.Show("Error Line " + lineNum + ": Invalid type data ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                break;
                             }
 
                             // Checksum two's complement
-                            byte chk = (byte)~checkSum;
-                            chk += 1;
+                            byte chk = (byte)((byte)~checkSum + 1);
 
                             int check_sum = Read(line, 9 + dataRaw.Length, 1);
 
@@ -377,8 +387,6 @@ namespace Bootloader
                             {
                                 // Everything is ok.
                                 //Console.WriteLine("Line: " + lineNum + " Everything is ok.");
-
-                                startAddressList.Add(startAddress);
                             }
                             else
                             {
@@ -417,8 +425,10 @@ namespace Bootloader
 
             int cnt = minKey;
             List<byte> list;
+
             while (cnt < maxKey)
             {
+                int ct = 0;
                 int ct1 = cnt;
                 if (ct1 % 16 != 0)
                 {
@@ -429,12 +439,20 @@ namespace Bootloader
                 for (int j = 0; j < dataCount; j++, cnt++)
                 {
                     if (ht.ContainsKey(cnt))
+                    {
                         list.Add((byte)ht[cnt]);
+                        ct = cnt;
+                    }
                     else
                         continue;
                 }
-                if (ht.ContainsKey(ct1))
-                    dataChunk.AddHT(ct1, list);
+                if (ht.ContainsKey(ct1) || ht.ContainsKey(ct))
+                {
+                    if (list.Count != 0)
+                        dataChunk.AddHT(ct1, list);
+                }
+
+
             }
 
 

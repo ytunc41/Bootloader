@@ -13,8 +13,15 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.1";
+            _versiyon = "v1.0.2";
         }
+
+        /* Versiyon: 1.0.2
+         * Tarih: 22.08.2020
+         * 
+         * - Veri yiginina data ekleme algoritmasi guncellenmistir.
+         * - List View ile data yiginini yazdirma algoritmasi guncellenmistir.
+         */
 
         /* Versiyon: 1.0.1
          * Tarih: 21.08.2020

@@ -9,7 +9,7 @@ namespace Bootloader
 {
     public class DataChunk
     {
-        
+
         private int _baseAddr;
         public int baseAddr { get { return _baseAddr; } set { _baseAddr = value; } }
         private int _startAddr;
@@ -39,7 +39,6 @@ namespace Bootloader
         public void AddByte(List<byte> data)
         {
             _dataChunk.Add(memAddres, data);
-
         }
 
         public void AddHT(int addr, List<byte> data)
@@ -49,7 +48,10 @@ namespace Bootloader
 
         public void ClearAll()
         {
-            _dataChunk.Clear();
+            datas.Clear();
+            baseAddr = 0;
+            startAddr = 0;
+            memAddres = 0;
         }
 
 
