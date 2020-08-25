@@ -13,9 +13,15 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.3";
+            _versiyon = "v1.0.4";
         }
 
+        /* Versiyon: 1.0.4
+         * Tarih: 25.08.2020
+         * 
+         * - SerialPort kütüphanesi eklenmistir.
+         * - Paket_Islemleri_LE methodları eklenmistir.(Little Endian islemciler icin) 
+         */
 
         /* Versiyon: 1.0.3
          * Tarih: 25.08.2020

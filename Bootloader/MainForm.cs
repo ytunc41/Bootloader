@@ -10,30 +10,323 @@ using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO.Ports;
 using System.Windows.Forms;
+
+
+using UINT8 = System.Byte;
+using INT8 = System.SByte;
+using UINT16 = System.UInt16;
+using INT16 = System.Int16;
+using UINT32 = System.UInt32;
+using INT32 = System.Int32;
+using UINT64 = System.UInt64;
+using FLOAT32 = System.Single;
+using FLOAT64 = System.Double;
+
+using SerialPortLib;
+using NLog;
+using System.Reflection;
 
 namespace Bootloader
 {
     public partial class MainForm : Form
     {
+        private readonly object seriport_rx = new object();
+        private readonly object paket_coz = new object();
+
         DataChunk dataChunk = new DataChunk();
         CommPro commPro = new CommPro();
-        
+
+        private static SerialPortInput serialPort;
 
         public MainForm()
         {
             InitializeComponent();
             this.Text += " " + Versiyon.getVS;
+
+            serialPort = new SerialPortInput();
+
+            serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
+            serialPort.MessageReceived += SerialPort_MessageReceived;
         }
+
+
+        #region InvokeMethod
+        private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
+        public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
+        {
+            if (control.InvokeRequired)
+            {
+                control.Invoke(new SetControlPropertyThreadSafeDelegate
+                (SetControlPropertyThreadSafe),
+                new object[] { control, propertyName, propertyValue });
+            }
+            else
+            {
+                control.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, null, control, new object[] { propertyValue });
+            }
+        }
+        #endregion
+
+        #region Communication Method/Events
+
+        #region SerialPort ReceivedHandler EventHandler
+        void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
+        {
+            lock(paket_coz)
+            {
+                PaketCoz(args.Data);
+            }
+
+        }
+        #endregion
+
+        #region SerialPort ConnectionStatusChanged Eventhandler
+        void SerialPort_ConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
+        {
+            lblStatus.Text = " Serial port connection status : " + args.Connected.ToString();
+            Console.WriteLine("Serial port connection status = {0}", args.Connected);
+        }
+        #endregion
+
+
+        #region PaketOlustur Methodlari
+
+        void Baglanti_Istek_PaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+        }
+        #endregion
+
+        #region PaketGonder Methodu
+        private void PaketGonder(CommPro commPro)
+        {
+            UINT8 tx_paket_sayac = 0;
+
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.sof1;
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.sof2;
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.packetType;
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.packetCounter++;
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.dataSize;
+
+            for (int i = 0; i < SendPacket.dataSize; i++)
+            {
+                commPro.tx_buffer[tx_paket_sayac++] = SendPacket.data[i];
+            }
+
+            //UINT16 crc16 = 0;
+            //crc16_hesapla(commPro.tx_buffer, (UINT8)(tx_paket_sayac - 2), ref crc16);
+
+            //commPro.tx_buffer[tx_paket_sayac++] = (UINT8)(crc16 & 0x00FF);
+            //commPro.tx_buffer[tx_paket_sayac++] = (UINT8)((crc16 >> 8) & 0x00FF);
+
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.crc1;
+            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.crc2;
+
+            if (serialPort.IsConnected)
+            {
+                UINT8[] buffer = new UINT8[tx_paket_sayac];
+                Array.Copy(commPro.tx_buffer, 0, buffer, 0, tx_paket_sayac);
+
+                serialPort.SendMessage(buffer);
+            }
+        }
+        #endregion
+
+        #region PaketCoz
+        long count = 0;
+        static UINT8 VERI_BOYUTU = 0;
+        private void PaketCoz(UINT8[] data)
+        {
+            lock (seriport_rx)
+            {
+                foreach (UINT8 byte_u8 in data)
+                {
+                    switch (commPro.packet_status)
+                    {
+                        case PACKET_STATUS.SOF1:
+                            {
+                                if( byte_u8 == 58 )
+                                {
+                                    ReceivedPacket.sof1 = byte_u8;
+                                    commPro.packet_status = PACKET_STATUS.SOF2;
+                                }
+                                else
+                                {
+                                    
+                                }
+                                break;
+                            }
+                        case PACKET_STATUS.SOF2:
+                            {
+                                if ( byte_u8 == 34 )
+                                {
+                                    ReceivedPacket.sof2 = byte_u8;
+                                    commPro.packet_status = PACKET_STATUS.PACKET_TYPE;
+                                }
+                                else
+                                {
+                                    commPro.packet_status = PACKET_STATUS.SOF1;
+                                }
+                                break;
+                            }
+                        case PACKET_STATUS.PACKET_TYPE:
+                            {
+                                ReceivedPacket.packetType = byte_u8;
+                                commPro.packet_status = PACKET_STATUS.PACKET_COUNTER;
+                                break;
+                            }
+                        case PACKET_STATUS.PACKET_COUNTER:
+                            {
+                                ReceivedPacket.packetCounter = byte_u8;
+                                commPro.packet_status = PACKET_STATUS.DATA_SIZE;
+                                break;
+                            }
+                        case PACKET_STATUS.DATA_SIZE:
+                            {
+                                ReceivedPacket.dataSize = byte_u8;
+
+                                if( ReceivedPacket.dataSize == 0 )
+                                {
+                                    commPro.packet_status = PACKET_STATUS.CRC1;
+                                    break;
+                                }
+                                commPro.packet_status = PACKET_STATUS.DATA;
+
+                                break;
+                            }
+                        case PACKET_STATUS.DATA:
+                            {
+                                ReceivedPacket.data[VERI_BOYUTU++] = byte_u8;
+
+                                if( VERI_BOYUTU == ReceivedPacket.dataSize)
+                                {
+                                    commPro.packet_status = PACKET_STATUS.CRC1;
+                                    VERI_BOYUTU = 0;
+                                }
+
+                                break;
+                            }
+                        case PACKET_STATUS.CRC1:
+                            {
+                                if (byte_u8 == 41)
+                                {
+                                    ReceivedPacket.crc1 = byte_u8;
+                                    commPro.packet_status = PACKET_STATUS.CRC2;
+                                }
+                                else
+                                {
+                                    commPro.packet_status = PACKET_STATUS.SOF1;
+                                }
+
+                                break;
+                            }
+                        case PACKET_STATUS.CRC2:
+                            {
+                                if (byte_u8 == 69)
+                                {
+                                    ReceivedPacket.crc2 = byte_u8;
+                                    commPro.packet_status = PACKET_STATUS.SOF1;
+
+                                    commPro.PAKET_HAZIR_FLAG = true;
+                                }
+                                else
+                                {
+                                    commPro.packet_status = PACKET_STATUS.SOF1;
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+
+                    } /* switch (commPro.packet_status) */
+
+
+                    if(commPro.PAKET_HAZIR_FLAG)
+                    {
+                        switch (ReceivedPacket.packetType)
+                        {
+                            case (UINT8)PACKET_TYPE.READ :
+                                {
+                                    Console.WriteLine(++count);
+                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.PROGRAM:
+                                {
+
+                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.ERASE:
+                                {
+
+                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    break;
+                                }
+
+                            default:
+                                break;
+                        }
+                    } /* if(commPro.PAKET_HAZIR_FLAG) */
+
+                } /* foreach (UINT8 byte_u8 in data) */
+
+            } /*  lock (seriport_rx) */
+
+        } /* private void PaketCoz(UINT8[] data) */
+            #endregion
+
+
+            #region CRC16 Hesaplama Methodu
+            private void crc16_hesapla(UINT8[] veriler, UINT8 paket_sayac, ref UINT16 crc16)
+        {
+            crc16 = 0;
+
+            for (UINT8 i = 0; i < paket_sayac; i++)
+            {
+                crc16 += veriler[i + 2];
+            }
+        }
+        #endregion
+
+    #endregion
+
+
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            
+            serialPort.SetPort("COM21",115200);
+
+            if (!serialPort.IsConnected)
+            {
+                bool portStatus = serialPort.Connect();
+
+                if(portStatus)
+                {
+                    count = 0;
+                    Baglanti_Istek_PaketOlustur();
+                    PaketGonder(commPro);
+                }
+                else
+                {
+                    MessageBox.Show("Baglanti Hatasi!");
+                }
+            }
         }
 
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
-
+            if (serialPort.IsConnected)
+            {
+                serialPort.Disconnect();
+            }
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
@@ -56,6 +349,7 @@ namespace Bootloader
                     // dosya ismi alindiktan sonra islemler burada yapilacak.
 
                     bool errFlag = HexConvertToDataChunk(filePath);
+
                     if (!errFlag)
                     {
                         TabFileTextProcess(filePath);
@@ -394,5 +688,12 @@ namespace Bootloader
 
         #endregion
 
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (serialPort.IsConnected)
+            {
+                serialPort.Disconnect();
+            }
+        }
     }
 }

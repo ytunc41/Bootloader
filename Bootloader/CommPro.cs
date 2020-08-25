@@ -18,8 +18,14 @@ namespace Bootloader
 {
     public class CommPro
     {
-        public PACKET_STATUS packet_status;
-        public PACKET_TYPE packet_type;
+        public PACKET_STATUS    packet_status;
+        public PACKET_TYPE      packet_type;
+
+        public UINT8[] tx_buffer = new UINT8[255];
+        public UINT8[] rx_buffer = new UINT8[255];
+
+
+        public bool PAKET_HAZIR_FLAG = false;
     }
 
     public static class SendPacket
@@ -30,9 +36,8 @@ namespace Bootloader
         public static UINT8 packetCounter;
         public static UINT8 dataSize;
         public static UINT8[] data = new UINT8[255];
-        public static UINT8 crc1 = 0;
-        public static UINT8 crc2 = 0;
-        public static UINT16 crc16 = 0;
+        public static UINT8 crc1 = 41;
+        public static UINT8 crc2 = 69;
     }
 
     public static class ReceivedPacket
@@ -45,7 +50,6 @@ namespace Bootloader
         public static UINT8[] data = new UINT8[255];
         public static UINT8 crc1;
         public static UINT8 crc2;
-        public static UINT16 crc16;
     }
 
     public enum PACKET_STATUS
@@ -62,8 +66,10 @@ namespace Bootloader
 
     public enum PACKET_TYPE
     {
-        USB_READY = 11,
-        HEX_DATA = 22
+        BAGLANTI = 0,
+        PROGRAM,
+        READ,
+        ERASE
     }
 
 
