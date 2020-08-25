@@ -13,8 +13,17 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.2";
+            _versiyon = "v1.0.3";
         }
+
+
+        /* Versiyon: 1.0.3
+         * Tarih: 25.08.2020
+         * 
+         * - HidLibrary kutuphanesinin dusuk hizi nedeniyle kaldirilmasi uygun gorulmustur.
+         * - Daha yuksek hizdaki cdc kullanilmasi icin seri port baglantisi yapilacaktir.
+         * - Haberlesme icin paket yapisi olusturulmustur.
+         */
 
         /* Versiyon: 1.0.2
          * Tarih: 22.08.2020

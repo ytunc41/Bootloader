@@ -12,154 +12,68 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using HidLibrary;
-
 namespace Bootloader
 {
     public partial class MainForm : Form
     {
-        private HidDevice[] deviceList;
-        private HidDevice selectedDevice;
-        private int PID = 22352;
-        private int VID = 1155;
+        DataChunk dataChunk = new DataChunk();
+        CommPro commPro = new CommPro();
+        
 
         public MainForm()
         {
             InitializeComponent();
-            RefreshDevices();
-            CheckForIllegalCrossThreadCalls = false;
-
             this.Text += " " + Versiyon.getVS;
         }
 
-
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            if (deviceList != null)
-            {
-                if ((selectedDevice != null))
-                    selectedDevice.CloseDevice();
-
-                for (int i = 0; i < deviceList.Length; i++)
-                    if (deviceList[i].Attributes.ProductId == PID && deviceList[i].Attributes.VendorId == VID)
-                        selectedDevice = deviceList[i];
-
-                bool stFlag = deviceList.Any(i => i.Attributes.ProductId == PID && i.Attributes.VendorId == VID);
-                if (stFlag)
-                {
-                    MessageBox.Show("ST-LINK connected!", "Alright!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    selectedDevice.OpenDevice();
-                    selectedDevice.MonitorDeviceEvents = true;
-                    selectedDevice.Inserted += Device_Inserted;
-                    selectedDevice.Removed += Device_Removed;
-                }
-                else
-                {
-                    MessageBox.Show("ST-LINK not connected", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-            }
-            else
-            {
-                MessageBox.Show("No Device List Detected!\nPls Click Refresh Button!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            
             
         }
 
-        private void RefreshDevices()
+        private void btnDisconnect_Click(object sender, EventArgs e)
         {
-            deviceList = HidDevices.Enumerate().ToArray();
-            // deviceList = HidDevices.Enumerate(0x536, 0x207, 0x1c7).ToArray();
 
-            //lstbxDevices.DisplayMember = "Description";
-            //lstbxDevices.DataSource = deviceList;
-
-            if (deviceList.Length > 0)
-                selectedDevice = deviceList[0];
-
-            if (deviceList != null)
-            {
-                foreach (var item in deviceList)
-                {
-                    if (item.Attributes.ProductId == PID && item.Attributes.VendorId == VID)
-                        lblOtoConn.Text = "Status: ST-LINK detected!";
-                    else
-                        lblOtoConn.Text = "Status: ST-LINK not detected!";
-                }
-            }
-            
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            RefreshDevices();
+
         }
         
-
-        private void btnDisconnect_Click(object sender, EventArgs e)
-        {
-            //if ((selectedDevice != null))
-            //    selectedDevice.CloseDevice();
-            //selectedDevice = deviceList[lstbxDevices.SelectedIndex];
-            //selectedDevice.OpenDevice();
-            //selectedDevice.MonitorDeviceEvents = true;
-            //selectedDevice.Inserted += Device_Inserted;
-            //selectedDevice.Removed += Device_Removed;
-        }
-
-        private void Device_Inserted()
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action(Device_Inserted));
-                return;
-            }
-            lblStatus.Text = "Status: Connected";
-        }
-
-        private void Device_Removed()
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action(Device_Removed));
-                return;
-            }
-            lblStatus.Text = "Status: Disconnected";
-        }
-
-
-        DataChunk dataChunk = new DataChunk();
-
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            //using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            //{
-            //    openFileDialog.InitialDirectory = @"C:\Users\yusuf\Desktop";
-            //    openFileDialog.Filter = "hex files (*.hex)|*.hex|All files (*.*)|*.*";
-            //    openFileDialog.FilterIndex = 1;
-            //    openFileDialog.RestoreDirectory = true;
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = @"C:\Users\yusuf\Desktop";
+                openFileDialog.Filter = "hex files (*.hex)|*.hex|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
 
-            //    if (openFileDialog.ShowDialog() == DialogResult.OK)
-            //    {
-            //        string filePath = openFileDialog.FileName;
-            //        // dosya ismi alindiktan sonra islemler burada yapilacak!
-            //        
-            //    }
-            //}
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    // dosya ismi alindiktan sonra islemler burada yapilacak.
 
+                    bool errFlag = HexConvertToDataChunk(filePath);
+                    if (!errFlag)
+                    {
+                        TabFileTextProcess(filePath);
+                        DataChunkToWriteListView();
+                    }
+                }
+            }
 
-            //string filePath = @"C:\Users\yusuf\Desktop\AutonomousFlightController.hex";
-            //string filePath = @"C:\Users\yusuf\Desktop\BLINK_LED_13.hex";
-            //string filePath = @"C:\Users\yusuf\Desktop\Flash.hex";
-            //string filePath = @"C:\Users\yusuf\Desktop\USB_HID.hex";
-            //string filePath = @"C:\Users\yusuf\Desktop\led_yak.hex";
-            string filePath = @"C:\Users\yusuf\Desktop\fff.hex";
-            HexConvertToDataChunk(filePath);
-            TabFileTextProcess(filePath);
-            DataChunkToWriteListView();
+            
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnErase_Click(object sender, EventArgs e)
+        {
 
         }
 
@@ -262,53 +176,13 @@ namespace Bootloader
                 MessageBox.Show("First of all, upload/open hex file.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private void WriteDataGridView()
-        {
-            dataGrid.ColumnCount = 17;
-            for (int i = 0; i < dataGrid.ColumnCount; i++)
-            {
-                dataGrid.Columns[i].Name = i.ToString("X");
-                dataGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            }
-            dataGrid.Columns[16].Name = "ASCII";
-
-            int dataCount = 16;
-            int count = dataChunk.datas.Keys.Count;
-            //dataGrid.Rows.Add(count);
-            int a = dataGrid.Rows.Add(count);
-            int addrMax = dataChunk.datas.Keys.Max();
-            int addr = (dataChunk.baseAddr << 16);
-            for (a = 0; a < count; a++, addr += dataCount)
-            {
-
-                //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
-                for (int j = 0; j < dataCount; j++)
-                {
-                    if (addr < addrMax)
-                    {
-                        dataGrid.Rows[a].Cells[j].Value = dataChunk.datas[addr][j].ToString("X2");
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                }
-            }
-
-
-            dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
-
-
-
-        }
-
-        private void HexConvertToDataChunk(string _filePath)
+        private bool HexConvertToDataChunk(string _filePath)
         {
             string filePath = _filePath;
             string line = string.Empty;
             int lineNum = 0;
             int dataCount = 16;
+            bool errFlag = false;
 
             Hashtable ht = new Hashtable();
             dataChunk.ClearAll();
@@ -365,6 +239,8 @@ namespace Bootloader
                                 else
                                 {
                                     MessageBox.Show("Error Line " + lineNum + ": Invalid type 4 data ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    errFlag = true;
+                                    break;
                                 }
                             }
                             else if (type == 5)
@@ -375,6 +251,7 @@ namespace Bootloader
                             else
                             {
                                 MessageBox.Show("Error Line " + lineNum + ": Invalid type data ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                errFlag = true;
                                 break;
                             }
 
@@ -391,6 +268,7 @@ namespace Bootloader
                             else
                             {
                                 MessageBox.Show("Error Line " + lineNum + ": Checksum Error", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                errFlag = true;
                                 break;
                             }
                         }   /* if (line[0] == ':') */
@@ -401,12 +279,14 @@ namespace Bootloader
                         else
                         {
                             MessageBox.Show("Error Line " + lineNum + ": At the beginning of the line is missing \":\" ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            errFlag = true;
                             break;
                         }
                     }   /* if (line.Length >= 11) */
                     else
                     {
                         MessageBox.Show("Error Line " + lineNum + ": Not enough characters ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        errFlag = true;
                         break;
                     }
                 }   /* while ((line = inputFile.ReadLine()) != null) */
@@ -451,12 +331,10 @@ namespace Bootloader
                     if (list.Count != 0)
                         dataChunk.AddHT(ct1, list);
                 }
-
-
             }
 
-
             Console.WriteLine("\nFile Content at path: " + filePath + "\nLine numbers: " + lineNum.ToString());
+            return errFlag;
         }
 
         private int Read(string line, int index, int byteCount)
@@ -477,6 +355,44 @@ namespace Bootloader
             return check;
         }
 
+        #region WriteDataGridView (inactive)
+        private void WriteDataGridView()
+        {
+            dataGrid.ColumnCount = 17;
+            for (int i = 0; i < dataGrid.ColumnCount; i++)
+            {
+                dataGrid.Columns[i].Name = i.ToString("X");
+                dataGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            }
+            dataGrid.Columns[16].Name = "ASCII";
+
+            int dataCount = 16;
+            int count = dataChunk.datas.Keys.Count;
+            //dataGrid.Rows.Add(count);
+            int a = dataGrid.Rows.Add(count);
+            int addrMax = dataChunk.datas.Keys.Max();
+            int addr = (dataChunk.baseAddr << 16);
+            for (a = 0; a < count; a++, addr += dataCount)
+            {
+
+                //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
+                for (int j = 0; j < dataCount; j++)
+                {
+                    if (addr < addrMax)
+                    {
+                        dataGrid.Rows[a].Cells[j].Value = dataChunk.datas[addr][j].ToString("X2");
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                }
+            }
+            dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
+        }
+
+        #endregion
 
     }
 }

@@ -47,6 +47,7 @@
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
+            this.btnVerify = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabFile = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -74,9 +75,11 @@
             this.imgButtons.Images.SetKeyName(2, "refresh_icon.png");
             this.imgButtons.Images.SetKeyName(3, "open_icon.png");
             this.imgButtons.Images.SetKeyName(4, "save_icon.png");
-            this.imgButtons.Images.SetKeyName(5, "eraser_icon.png");
-            this.imgButtons.Images.SetKeyName(6, "usb_conn2.png");
-            this.imgButtons.Images.SetKeyName(7, "usb_disconn2.png");
+            this.imgButtons.Images.SetKeyName(5, "verify_icon.png");
+            this.imgButtons.Images.SetKeyName(6, "verify_icon2.png");
+            this.imgButtons.Images.SetKeyName(7, "eraser_icon.png");
+            this.imgButtons.Images.SetKeyName(8, "usb_conn2.png");
+            this.imgButtons.Images.SetKeyName(9, "usb_disconn2.png");
             // 
             // lblOtoConn
             // 
@@ -101,7 +104,7 @@
             this.groupBox1.Controls.Add(this.lblSize);
             this.groupBox1.Controls.Add(this.cmbAddress);
             this.groupBox1.Controls.Add(this.lblAddress);
-            this.groupBox1.Location = new System.Drawing.Point(350, 12);
+            this.groupBox1.Location = new System.Drawing.Point(415, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(435, 48);
             this.groupBox1.TabIndex = 9;
@@ -194,17 +197,19 @@
             this.btnSave.TabIndex = 6;
             this.tooltipInfo.SetToolTip(this.btnSave, "Save file.");
             this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnErase
             // 
             this.btnErase.ImageKey = "eraser_icon.png";
             this.btnErase.ImageList = this.imgButtons;
-            this.btnErase.Location = new System.Drawing.Point(290, 12);
+            this.btnErase.Location = new System.Drawing.Point(340, 12);
             this.btnErase.Name = "btnErase";
             this.btnErase.Size = new System.Drawing.Size(44, 44);
             this.btnErase.TabIndex = 5;
             this.tooltipInfo.SetToolTip(this.btnErase, "Full chip erase.");
             this.btnErase.UseVisualStyleBackColor = true;
+            this.btnErase.Click += new System.EventHandler(this.btnErase_Click);
             // 
             // btnDisconnect
             // 
@@ -241,6 +246,17 @@
             this.tooltipInfo.SetToolTip(this.btnConnect, "Connect to the target.");
             this.btnConnect.UseVisualStyleBackColor = true;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
+            // 
+            // btnVerify
+            // 
+            this.btnVerify.ImageKey = "verify_icon2.png";
+            this.btnVerify.ImageList = this.imgButtons;
+            this.btnVerify.Location = new System.Drawing.Point(290, 12);
+            this.btnVerify.Name = "btnVerify";
+            this.btnVerify.Size = new System.Drawing.Size(44, 44);
+            this.btnVerify.TabIndex = 14;
+            this.tooltipInfo.SetToolTip(this.btnVerify, "Full chip erase.");
+            this.btnVerify.UseVisualStyleBackColor = true;
             // 
             // tabControl1
             // 
@@ -307,7 +323,7 @@
             this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
             this.tabDeviceMemory.Name = "tabDeviceMemory";
             this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 377);
+            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 455);
             this.tabDeviceMemory.TabIndex = 1;
             this.tabDeviceMemory.Text = "Device Memory";
             this.tabDeviceMemory.UseVisualStyleBackColor = true;
@@ -318,7 +334,7 @@
             this.dataGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGrid.Location = new System.Drawing.Point(3, 3);
             this.dataGrid.Name = "dataGrid";
-            this.dataGrid.Size = new System.Drawing.Size(831, 371);
+            this.dataGrid.Size = new System.Drawing.Size(831, 449);
             this.dataGrid.TabIndex = 15;
             // 
             // lblStatus
@@ -346,11 +362,12 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 509);
             this.tableLayoutPanel1.TabIndex = 13;
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(874, 590);
+            this.Controls.Add(this.btnVerify);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnOpen);
@@ -362,7 +379,7 @@
             this.Controls.Add(this.btnConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Bootloader - ASOS";
@@ -409,6 +426,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.ListView listViewFile;
         private System.Windows.Forms.Label lblFileInfo;
+        private System.Windows.Forms.Button btnVerify;
     }
 }
 
