@@ -13,8 +13,18 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.4";
+            _versiyon = "v1.0.5";
         }
+
+        /* Versiyon: 1.0.5
+         * Tarih: 27.08.2020
+         * 
+         * - CHECK_STATUS enum sınıfı eklenip sof1, sof2, crc1, crc2 değerleri sabit bir yerde tutulmustur.
+         * - Cihaza gönderilen istek paketi sonucu cihazdan alınan flash verileri "deviceMemory" data yığınında toplanmistir.
+         * - Connect, Disconnect ve diger bazi eventlar guncellenmistir.
+         * - Device Memory tab file duzenlenmistir.
+         * - PaketTopla metodu ve Erase paketi olusturulmustur.
+         */
 
         /* Versiyon: 1.0.4
          * Tarih: 25.08.2020

@@ -31,3 +31,4 @@ C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.cspro
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.exe
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.pdb
 C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete
+C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete

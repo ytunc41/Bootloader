@@ -23,7 +23,7 @@ namespace Bootloader
 
         public UINT8[] tx_buffer = new UINT8[255];
         public UINT8[] rx_buffer = new UINT8[255];
-
+        public List<UINT8> txBuffer = new List<UINT8>();
 
         public bool PAKET_HAZIR_FLAG = false;
     }
@@ -67,9 +67,18 @@ namespace Bootloader
     public enum PACKET_TYPE
     {
         BAGLANTI = 0,
+        FLASH_SIZE,
         PROGRAM,
         READ,
         ERASE
+    }
+
+    public enum CHECK_STATUS
+    {
+        SOF1 = 58,
+        SOF2 = 34,
+        CRC1 = 41,
+        CRC2 = 69
     }
 
 

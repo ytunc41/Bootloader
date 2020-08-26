@@ -35,7 +35,8 @@ namespace Bootloader
         private readonly object seriport_rx = new object();
         private readonly object paket_coz = new object();
 
-        DataChunk dataChunk = new DataChunk();
+        DataChunk fileChunk = new DataChunk();
+        DataChunk deviceMemory = new DataChunk();
         CommPro commPro = new CommPro();
 
         private static SerialPortInput serialPort;
@@ -46,13 +47,12 @@ namespace Bootloader
             this.Text += " " + Versiyon.getVS;
 
             serialPort = new SerialPortInput();
-
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
+            serialPort.SetPort("COM6", 115200);
         }
 
 
-        #region InvokeMethod
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
         {
@@ -67,81 +67,63 @@ namespace Bootloader
                 control.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, null, control, new object[] { propertyValue });
             }
         }
-        #endregion
 
         #region Communication Method/Events
 
-        #region SerialPort ReceivedHandler EventHandler
         void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
         {
             lock(paket_coz)
             {
                 PaketCoz(args.Data);
+                if (true)
+                    Console.WriteLine(" adsfg ");
+
             }
-
         }
-        #endregion
+        
+        
 
-        #region SerialPort ConnectionStatusChanged Eventhandler
-        void SerialPort_ConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
-        {
-            lblStatus.Text = " Serial port connection status : " + args.Connected.ToString();
-            Console.WriteLine("Serial port connection status = {0}", args.Connected);
-        }
-        #endregion
+        
 
-
-        #region PaketOlustur Methodlari
-
-        void Baglanti_Istek_PaketOlustur()
-        {
-            UINT8 paket_sayaci = 0;
-
-            SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
-        }
-        #endregion
-
-        #region PaketGonder Methodu
         private void PaketGonder(CommPro commPro)
         {
-            UINT8 tx_paket_sayac = 0;
-
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.sof1;
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.sof2;
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.packetType;
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.packetCounter++;
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.dataSize;
-
+            commPro.txBuffer.Clear();
+            commPro.txBuffer.Add(SendPacket.sof1);
+            commPro.txBuffer.Add(SendPacket.sof2);
+            commPro.txBuffer.Add(SendPacket.packetType);
+            commPro.txBuffer.Add(++SendPacket.packetCounter);
+            commPro.txBuffer.Add(SendPacket.dataSize);
             for (int i = 0; i < SendPacket.dataSize; i++)
-            {
-                commPro.tx_buffer[tx_paket_sayac++] = SendPacket.data[i];
-            }
-
-            //UINT16 crc16 = 0;
-            //crc16_hesapla(commPro.tx_buffer, (UINT8)(tx_paket_sayac - 2), ref crc16);
-
-            //commPro.tx_buffer[tx_paket_sayac++] = (UINT8)(crc16 & 0x00FF);
-            //commPro.tx_buffer[tx_paket_sayac++] = (UINT8)((crc16 >> 8) & 0x00FF);
-
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.crc1;
-            commPro.tx_buffer[tx_paket_sayac++] = SendPacket.crc2;
+                commPro.txBuffer.Add(SendPacket.data[i]);
+            commPro.txBuffer.Add(SendPacket.crc1);
+            commPro.txBuffer.Add(SendPacket.crc2);
 
             if (serialPort.IsConnected)
-            {
-                UINT8[] buffer = new UINT8[tx_paket_sayac];
-                Array.Copy(commPro.tx_buffer, 0, buffer, 0, tx_paket_sayac);
+                serialPort.SendMessage(commPro.txBuffer.ToArray());
+            else
+                MessageBox.Show("The connection was lost while sending the package!", "Serial Port Connection", 0, MessageBoxIcon.Error);
 
-                serialPort.SendMessage(buffer);
-            }
         }
-        #endregion
 
-        #region PaketCoz
-        long count = 0;
-        static UINT8 VERI_BOYUTU = 0;
+        private void PaketTopla()
+        {
+            int addr = (ReceivedPacket.data[3] << 24) + (ReceivedPacket.data[2] << 16) + (ReceivedPacket.data[1] << 8) + ReceivedPacket.data[0];
+
+            List<UINT8> data = new List<UINT8>();
+            for (int i = 4; i < ReceivedPacket.dataSize; i++)
+            {
+                data.Add(ReceivedPacket.data[i]);
+            }
+            deviceMemory.AddHT(addr, data);
+            Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
+        }
+
+        private UINT32 paketCount;
+        private UINT32 sofErr;
+        private UINT32 crcErr;
         private void PaketCoz(UINT8[] data)
         {
+            UINT8 VERI_BOYUTU = 0;
             lock (seriport_rx)
             {
                 foreach (UINT8 byte_u8 in data)
@@ -150,26 +132,28 @@ namespace Bootloader
                     {
                         case PACKET_STATUS.SOF1:
                             {
-                                if( byte_u8 == 58 )
+                                if( byte_u8 == (UINT8)CHECK_STATUS.SOF1 )
                                 {
                                     ReceivedPacket.sof1 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.SOF2;
                                 }
                                 else
                                 {
-                                    
+                                    sofErr++;
+                                    commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
                             }
                         case PACKET_STATUS.SOF2:
                             {
-                                if ( byte_u8 == 34 )
+                                if ( byte_u8 == (UINT8)CHECK_STATUS.SOF2 )
                                 {
                                     ReceivedPacket.sof2 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.PACKET_TYPE;
                                 }
                                 else
                                 {
+                                    sofErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -196,38 +180,36 @@ namespace Bootloader
                                     break;
                                 }
                                 commPro.packet_status = PACKET_STATUS.DATA;
-
                                 break;
                             }
                         case PACKET_STATUS.DATA:
                             {
                                 ReceivedPacket.data[VERI_BOYUTU++] = byte_u8;
 
-                                if( VERI_BOYUTU == ReceivedPacket.dataSize)
+                                if( VERI_BOYUTU == ReceivedPacket.dataSize )
                                 {
                                     commPro.packet_status = PACKET_STATUS.CRC1;
                                     VERI_BOYUTU = 0;
                                 }
-
                                 break;
                             }
                         case PACKET_STATUS.CRC1:
                             {
-                                if (byte_u8 == 41)
+                                if ( byte_u8 == (UINT8)CHECK_STATUS.CRC1 )
                                 {
                                     ReceivedPacket.crc1 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.CRC2;
                                 }
                                 else
                                 {
+                                    crcErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
-
                                 break;
                             }
                         case PACKET_STATUS.CRC2:
                             {
-                                if (byte_u8 == 69)
+                                if ( byte_u8 == (UINT8)CHECK_STATUS.CRC2 )
                                 {
                                     ReceivedPacket.crc2 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
@@ -236,6 +218,7 @@ namespace Bootloader
                                 }
                                 else
                                 {
+                                    crcErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -252,9 +235,18 @@ namespace Bootloader
                     {
                         switch (ReceivedPacket.packetType)
                         {
-                            case (UINT8)PACKET_TYPE.READ :
+                            case (UINT8)PACKET_TYPE.READ:
                                 {
-                                    Console.WriteLine(++count);
+                                    Console.WriteLine("Paket: " + ++paketCount);
+                                    PaketTopla();
+
+                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.FLASH_SIZE:
+                                {
+                                    // flash boyut paketi gelecek.
+
                                     commPro.PAKET_HAZIR_FLAG = false;
                                     break;
                                 }
@@ -281,64 +273,70 @@ namespace Bootloader
             } /*  lock (seriport_rx) */
 
         } /* private void PaketCoz(UINT8[] data) */
-            #endregion
 
-
-            #region CRC16 Hesaplama Methodu
-            private void crc16_hesapla(UINT8[] veriler, UINT8 paket_sayac, ref UINT16 crc16)
-        {
-            crc16 = 0;
-
-            for (UINT8 i = 0; i < paket_sayac; i++)
-            {
-                crc16 += veriler[i + 2];
-            }
-        }
         #endregion
 
-    #endregion
 
+        void SerialPort_ConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
+        {
+            deviceMemory.ClearAll();
+            listViewDevice.Clear();
+            paketCount = 0; sofErr = 0; crcErr = 0;
+            lblStatus.Text = " Serial port connection status : " + args.Connected.ToString();
+            Console.WriteLine("Serial port connection status = {0}", args.Connected);
 
+            bool portStatus = serialPort.IsConnected;
+            if (portStatus)
+            {
+                Baglanti_Istek_PaketOlustur();
+                PaketGonder(commPro);
+            }
+        }
+
+        private void Baglanti_Istek_PaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+        }
+
+        private void ErasePaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+        }
+
+        private void btnErase_Click(object sender, EventArgs e)
+        {
+            ErasePaketOlustur();
+            PaketGonder(commPro);
+        }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            serialPort.SetPort("COM21",115200);
-
-            if (!serialPort.IsConnected)
-            {
-                bool portStatus = serialPort.Connect();
-
-                if(portStatus)
-                {
-                    count = 0;
-                    Baglanti_Istek_PaketOlustur();
-                    PaketGonder(commPro);
-                }
-                else
-                {
-                    MessageBox.Show("Baglanti Hatasi!");
-                }
-            }
+            if (!serialPort.IsConnected)    // Cihaz bağlı değilse
+                serialPort.Connect();
+            else                           // Cihaz bağlı ise
+                MessageBox.Show("The device is already connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             if (serialPort.IsConnected)
-            {
                 serialPort.Disconnect();
-            }
+            else
+                MessageBox.Show("The device is not already connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-
+            tabControl1.SelectedTab = tabDeviceMemory;
+            DataChunkToWriteListView(deviceMemory, listViewDevice);
         }
         
         private void btnOpen_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.InitialDirectory = @"C:\Users\yusuf\Desktop";
                 openFileDialog.Filter = "hex files (*.hex)|*.hex|All files (*.*)|*.*";
                 openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
@@ -348,64 +346,55 @@ namespace Bootloader
                     string filePath = openFileDialog.FileName;
                     // dosya ismi alindiktan sonra islemler burada yapilacak.
 
-                    bool errFlag = HexConvertToDataChunk(filePath);
-
+                    bool errFlag = HexFileToDataChunk(filePath, fileChunk);
+                    
                     if (!errFlag)
                     {
-                        TabFileTextProcess(filePath);
-                        DataChunkToWriteListView();
+                        TabFileTextProcess(filePath, fileChunk);
+                        DataChunkToWriteListView(fileChunk, listViewFile);
                     }
                 }
             }
 
-            
         }
 
-        private void btnSave_Click(object sender, EventArgs e)
+        
+        private void TabFileTextProcess(string filePath, DataChunk fileChunk)
         {
-
-        }
-
-        private void btnErase_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void TabFileTextProcess(string filePath)
-        {
+            tabControl1.SelectedTab = tabFile;
             char[] chars = { '\\' };
             string[] words = filePath.Split(chars);
             string fileText = words[words.Length - 1].ToString();
             tabFile.Text = "File: " + fileText;
-            string addrMax = "0x" + (dataChunk.datas.Keys.Max() + dataChunk.datas[dataChunk.datas.Keys.Max()].Count).ToString("X8");
-            string addr = "0x" + (dataChunk.baseAddr << 16).ToString("X8");
+            string addrMax = "0x" + (fileChunk.datas.Keys.Max() + fileChunk.datas[fileChunk.datas.Keys.Max()].Count).ToString("X8");
+            string addr = "0x" + (fileChunk.baseAddr << 16).ToString("X8");
             lblFileInfo.Text = "[" + fileText + "]" + ",  " + "Address Range: " + "[" + addr + " " + addrMax + "]";
         }
 
-        private void DataChunkToWriteListView()
+        private void DataChunkToWriteListView(DataChunk dataChunk, ListView listView)
         {
-            listViewFile.Clear();
+            listView.Clear();
 
             #region Adding column headers according to bits. (8,16,32 bits)
-            listViewFile.Columns.Add("Address", 90);
+            listView.Columns.Add("Address", 90);
             for (int i = 0; i < 16; i++)
             {
                 if (cmbDataWidth.SelectedIndex == 0)
                 {
-                    listViewFile.Columns.Add(i.ToString("X"), 40);
+                    listView.Columns.Add(i.ToString("X"), 40);
                 }
                 else if (cmbDataWidth.SelectedIndex == 1)
                 {
                     if (i % 2 == 1)
                     {
-                        listViewFile.Columns.Add((i - 1).ToString("X"), 65);
+                        listView.Columns.Add((i - 1).ToString("X"), 65);
                     }
                 }
                 else if (cmbDataWidth.SelectedIndex == 2)
                 {
                     if (i % 4 == 3)
                     {
-                        listViewFile.Columns.Add((i - 3).ToString("X"), 90);
+                        listView.Columns.Add((i - 3).ToString("X"), 90);
                     }
                 }
             }
@@ -457,29 +446,29 @@ namespace Bootloader
                 }
                 string[] str = listString.ToArray();
                 lst = new ListViewItem(str);
-                listViewFile.Items.Add(lst);
+                listView.Items.Add(lst);
             }
 
         }
 
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (dataChunk.datas.Count != 0)
-                DataChunkToWriteListView();
+            // Simdilik hex file icin kalsin. Daha sonra device memory icin de yapılacak!
+            if (fileChunk.datas.Count != 0)
+                DataChunkToWriteListView(fileChunk, listViewFile);
             else
                 MessageBox.Show("First of all, upload/open hex file.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private bool HexConvertToDataChunk(string _filePath)
+        private bool HexFileToDataChunk(string _filePath, DataChunk fileChunk)
         {
             string filePath = _filePath;
             string line = string.Empty;
             int lineNum = 0;
             int dataCount = 16;
             bool errFlag = false;
-
             Hashtable ht = new Hashtable();
-            dataChunk.ClearAll();
+            fileChunk.ClearAll();
 
             using (var inputFile = new StreamReader(File.OpenRead(filePath)))
             {
@@ -509,7 +498,7 @@ namespace Bootloader
                             if (type == 0)
                             {
                                 int adr = startAddress;
-                                adr = (dataChunk.baseAddr << 16) + startAddress;
+                                adr = (fileChunk.baseAddr << 16) + startAddress;
                                 for (int i = 0; i < data.Length; i++, adr++)
                                     ht.Add(adr, data[i]);
                             }
@@ -528,7 +517,7 @@ namespace Bootloader
                                 if (sizeData == 2)
                                 {
                                     int baseAddress = (data[0] << 8) + data[1];
-                                    dataChunk.baseAddr = baseAddress;
+                                    fileChunk.baseAddr = baseAddress;
                                 }
                                 else
                                 {
@@ -623,7 +612,7 @@ namespace Bootloader
                 if (ht.ContainsKey(ct1) || ht.ContainsKey(ct))
                 {
                     if (list.Count != 0)
-                        dataChunk.AddHT(ct1, list);
+                        fileChunk.AddHT(ct1, list);
                 }
             }
 
@@ -649,42 +638,50 @@ namespace Bootloader
             return check;
         }
 
-        #region WriteDataGridView (inactive)
-        private void WriteDataGridView()
+        private void btnSave_Click(object sender, EventArgs e)
         {
-            dataGrid.ColumnCount = 17;
-            for (int i = 0; i < dataGrid.ColumnCount; i++)
-            {
-                dataGrid.Columns[i].Name = i.ToString("X");
-                dataGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            }
-            dataGrid.Columns[16].Name = "ASCII";
 
-            int dataCount = 16;
-            int count = dataChunk.datas.Keys.Count;
-            //dataGrid.Rows.Add(count);
-            int a = dataGrid.Rows.Add(count);
-            int addrMax = dataChunk.datas.Keys.Max();
-            int addr = (dataChunk.baseAddr << 16);
-            for (a = 0; a < count; a++, addr += dataCount)
-            {
-
-                //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
-                for (int j = 0; j < dataCount; j++)
-                {
-                    if (addr < addrMax)
-                    {
-                        dataGrid.Rows[a].Cells[j].Value = dataChunk.datas[addr][j].ToString("X2");
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                }
-            }
-            dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
         }
+
+        
+
+
+        #region WriteDataGridView (inactive)
+        //private void WriteDataGridView(DataChunk dataChunk)
+        //{
+        //    dataGrid.ColumnCount = 17;
+        //    for (int i = 0; i < dataGrid.ColumnCount; i++)
+        //    {
+        //        dataGrid.Columns[i].Name = i.ToString("X");
+        //        dataGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+        //    }
+        //    dataGrid.Columns[16].Name = "ASCII";
+
+        //    int dataCount = 16;
+        //    int count = dataChunk.datas.Keys.Count;
+        //    //dataGrid.Rows.Add(count);
+        //    int a = dataGrid.Rows.Add(count);
+        //    int addrMax = dataChunk.datas.Keys.Max();
+        //    int addr = (dataChunk.baseAddr << 16);
+        //    for (a = 0; a < count; a++, addr += dataCount)
+        //    {
+
+        //        //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
+        //        for (int j = 0; j < dataCount; j++)
+        //        {
+        //            if (addr < addrMax)
+        //            {
+        //                dataGrid.Rows[a].Cells[j].Value = dataChunk.datas[addr][j].ToString("X2");
+        //            }
+        //            else
+        //            {
+        //                break;
+        //            }
+
+        //        }
+        //    }
+        //    dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
+        //}
 
         #endregion
 
