@@ -67,9 +67,10 @@ namespace Bootloader
     public enum PACKET_TYPE
     {
         BAGLANTI = 0,
-        FLASH_SIZE,
         PROGRAM,
         READ,
+        FLASH_SIZE,
+        UNIQUE_ID,
         ERASE
     }
 

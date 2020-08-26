@@ -13,8 +13,17 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.5";
+            _versiyon = "v1.0.6";
         }
+
+        /* Versiyon: 1.0.6
+         * Tarih: 27.08.2020
+         * 
+         * - cmbDataWidth duzenlenmistir.
+         * - PACKET_TYPE enum yapisi duzenlenmistir.
+         * - Algoritmalar guncelenmistir.
+         * - FlashSize ve UniqueID paketleri ve enum yapilari eklenmistir.
+         */
 
         /* Versiyon: 1.0.5
          * Tarih: 27.08.2020

@@ -38,7 +38,6 @@ namespace Bootloader
         DataChunk fileChunk = new DataChunk();
         DataChunk deviceMemory = new DataChunk();
         CommPro commPro = new CommPro();
-
         private static SerialPortInput serialPort;
 
         public MainForm()
@@ -51,7 +50,6 @@ namespace Bootloader
             serialPort.MessageReceived += SerialPort_MessageReceived;
             serialPort.SetPort("COM6", 115200);
         }
-
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
@@ -77,14 +75,9 @@ namespace Bootloader
                 PaketCoz(args.Data);
                 if (true)
                     Console.WriteLine(" adsfg ");
-
             }
         }
         
-        
-
-        
-
         private void PaketGonder(CommPro commPro)
         {
             commPro.txBuffer.Clear();
@@ -102,20 +95,28 @@ namespace Bootloader
                 serialPort.SendMessage(commPro.txBuffer.ToArray());
             else
                 MessageBox.Show("The connection was lost while sending the package!", "Serial Port Connection", 0, MessageBoxIcon.Error);
-
         }
-
-        private void PaketTopla()
+        
+        private void VeriPaketTopla()
         {
-            int addr = (ReceivedPacket.data[3] << 24) + (ReceivedPacket.data[2] << 16) + (ReceivedPacket.data[1] << 8) + ReceivedPacket.data[0];
-
+            int addr = BitConverter.ToInt32(ReceivedPacket.data, 0);
             List<UINT8> data = new List<UINT8>();
             for (int i = 4; i < ReceivedPacket.dataSize; i++)
-            {
                 data.Add(ReceivedPacket.data[i]);
-            }
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
+        }
+
+        private void FlashSizePaketTopla()
+        {
+            int flashSize = BitConverter.ToInt32(ReceivedPacket.data, 0);
+        }
+
+        private void UniqueIDPaketTopla()
+        {
+            uint uniq1 = BitConverter.ToUInt32(ReceivedPacket.data, 0);
+            uint uniq2 = BitConverter.ToUInt32(ReceivedPacket.data, 4);
+            uint uniq3 = BitConverter.ToUInt32(ReceivedPacket.data, 8);
         }
 
         private UINT32 paketCount;
@@ -237,35 +238,35 @@ namespace Bootloader
                         {
                             case (UINT8)PACKET_TYPE.READ:
                                 {
-                                    Console.WriteLine("Paket: " + ++paketCount);
-                                    PaketTopla();
-
-                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    Console.WriteLine("Veri Paketi: " + ++paketCount);
+                                    VeriPaketTopla();
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.FLASH_SIZE:
                                 {
-                                    // flash boyut paketi gelecek.
-
-                                    commPro.PAKET_HAZIR_FLAG = false;
+                                    FlashSizePaketTopla();
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.UNIQUE_ID:
+                                {
+                                    UniqueIDPaketTopla();
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.PROGRAM:
                                 {
 
-                                    commPro.PAKET_HAZIR_FLAG = false;
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.ERASE:
                                 {
 
-                                    commPro.PAKET_HAZIR_FLAG = false;
                                     break;
                                 }
 
                             default:
                                 break;
                         }
+                        commPro.PAKET_HAZIR_FLAG = false;
                     } /* if(commPro.PAKET_HAZIR_FLAG) */
 
                 } /* foreach (UINT8 byte_u8 in data) */
@@ -344,10 +345,7 @@ namespace Bootloader
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openFileDialog.FileName;
-                    // dosya ismi alindiktan sonra islemler burada yapilacak.
-
                     bool errFlag = HexFileToDataChunk(filePath, fileChunk);
-                    
                     if (!errFlag)
                     {
                         TabFileTextProcess(filePath, fileChunk);
@@ -358,7 +356,6 @@ namespace Bootloader
 
         }
 
-        
         private void TabFileTextProcess(string filePath, DataChunk fileChunk)
         {
             tabControl1.SelectedTab = tabFile;
@@ -453,11 +450,12 @@ namespace Bootloader
 
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Simdilik hex file icin kalsin. Daha sonra device memory icin de yapılacak!
             if (fileChunk.datas.Count != 0)
                 DataChunkToWriteListView(fileChunk, listViewFile);
+            else if (deviceMemory.datas.Count != 0)
+                DataChunkToWriteListView(deviceMemory, listViewDevice);
             else
-                MessageBox.Show("First of all, upload/open hex file.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("First of all, upload hex file or connect device.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private bool HexFileToDataChunk(string _filePath, DataChunk fileChunk)
@@ -644,8 +642,6 @@ namespace Bootloader
         }
 
         
-
-
         #region WriteDataGridView (inactive)
         //private void WriteDataGridView(DataChunk dataChunk)
         //{
