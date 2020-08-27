@@ -27,7 +27,6 @@ using FLOAT64 = System.Double;
 using SerialPortLib;
 using NLog;
 using System.Reflection;
-using System.Management;
 
 namespace Bootloader
 {
@@ -50,32 +49,6 @@ namespace Bootloader
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
             serialPort.SetPort("COM21", 115200);
-            SeriPortAlgila();
-        }
-
-        private void SeriPortAlgila()
-        {
-            try
-            {
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PnPEntity");
-
-                foreach (ManagementObject queryObj in searcher.Get())
-                {
-                    if (queryObj["Caption"] != null)
-                    {
-                        if (queryObj["Caption"].ToString().Contains("(COM"))
-                        {
-                            Console.WriteLine(queryObj["Name"]);
-                        }
-                        //textBox2.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 3);
-                    }
-
-                }
-            }
-            catch (ManagementException)
-            {
-                MessageBox.Show("hata1");
-            }
         }
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
@@ -332,6 +305,7 @@ namespace Bootloader
         private void Baglanti_Istek_PaketOlustur()
         {
             UINT8 paket_sayaci = 0;
+
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
         }
