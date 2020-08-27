@@ -49,23 +49,23 @@
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnVerify = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabDeviceMemory = new System.Windows.Forms.TabPage();
-            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.listViewDevice = new System.Windows.Forms.ListView();
-            this.lblDeviceMemory = new System.Windows.Forms.Label();
             this.tabFile = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.listViewFile = new System.Windows.Forms.ListView();
             this.lblFileInfo = new System.Windows.Forms.Label();
+            this.tabDeviceMemory = new System.Windows.Forms.TabPage();
             this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.listViewDevice = new System.Windows.Forms.ListView();
+            this.lblDeviceMemory = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
-            this.tabDeviceMemory.SuspendLayout();
-            this.tableLayoutPanel3.SuspendLayout();
             this.tabFile.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            this.tabDeviceMemory.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // imgButtons
@@ -271,55 +271,6 @@
             this.tabControl1.Size = new System.Drawing.Size(845, 481);
             this.tabControl1.TabIndex = 12;
             // 
-            // tabDeviceMemory
-            // 
-            this.tabDeviceMemory.Controls.Add(this.tableLayoutPanel3);
-            this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
-            this.tabDeviceMemory.Name = "tabDeviceMemory";
-            this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 455);
-            this.tabDeviceMemory.TabIndex = 1;
-            this.tabDeviceMemory.Text = "Device Memory";
-            this.tabDeviceMemory.UseVisualStyleBackColor = true;
-            // 
-            // tableLayoutPanel3
-            // 
-            this.tableLayoutPanel3.ColumnCount = 1;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel3.Controls.Add(this.listViewDevice, 0, 1);
-            this.tableLayoutPanel3.Controls.Add(this.lblDeviceMemory, 0, 0);
-            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
-            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 2;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 3.773585F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 96.22642F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 449);
-            this.tableLayoutPanel3.TabIndex = 18;
-            // 
-            // listViewDevice
-            // 
-            this.listViewDevice.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewDevice.FullRowSelect = true;
-            this.listViewDevice.GridLines = true;
-            this.listViewDevice.HideSelection = false;
-            this.listViewDevice.Location = new System.Drawing.Point(3, 19);
-            this.listViewDevice.Name = "listViewDevice";
-            this.listViewDevice.Size = new System.Drawing.Size(825, 427);
-            this.listViewDevice.TabIndex = 17;
-            this.listViewDevice.UseCompatibleStateImageBehavior = false;
-            this.listViewDevice.View = System.Windows.Forms.View.Details;
-            // 
-            // lblDeviceMemory
-            // 
-            this.lblDeviceMemory.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblDeviceMemory.AutoSize = true;
-            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 1);
-            this.lblDeviceMemory.Name = "lblDeviceMemory";
-            this.lblDeviceMemory.Size = new System.Drawing.Size(81, 13);
-            this.lblDeviceMemory.TabIndex = 18;
-            this.lblDeviceMemory.Text = "Device Memory";
-            // 
             // tabFile
             // 
             this.tabFile.Controls.Add(this.tableLayoutPanel2);
@@ -369,6 +320,17 @@
             this.lblFileInfo.TabIndex = 18;
             this.lblFileInfo.Text = "File";
             // 
+            // tabDeviceMemory
+            // 
+            this.tabDeviceMemory.Controls.Add(this.tableLayoutPanel3);
+            this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
+            this.tabDeviceMemory.Name = "tabDeviceMemory";
+            this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 455);
+            this.tabDeviceMemory.TabIndex = 1;
+            this.tabDeviceMemory.Text = "Device Memory";
+            this.tabDeviceMemory.UseVisualStyleBackColor = true;
+            // 
             // lblStatus
             // 
             this.lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -394,6 +356,44 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 509);
             this.tableLayoutPanel1.TabIndex = 13;
             // 
+            // tableLayoutPanel3
+            // 
+            this.tableLayoutPanel3.ColumnCount = 1;
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.Controls.Add(this.listViewDevice, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.lblDeviceMemory, 0, 0);
+            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 2;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 3.773585F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 96.22642F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 449);
+            this.tableLayoutPanel3.TabIndex = 18;
+            // 
+            // listViewDevice
+            // 
+            this.listViewDevice.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewDevice.FullRowSelect = true;
+            this.listViewDevice.GridLines = true;
+            this.listViewDevice.HideSelection = false;
+            this.listViewDevice.Location = new System.Drawing.Point(3, 19);
+            this.listViewDevice.Name = "listViewDevice";
+            this.listViewDevice.Size = new System.Drawing.Size(825, 427);
+            this.listViewDevice.TabIndex = 17;
+            this.listViewDevice.UseCompatibleStateImageBehavior = false;
+            this.listViewDevice.View = System.Windows.Forms.View.Details;
+            // 
+            // lblDeviceMemory
+            // 
+            this.lblDeviceMemory.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblDeviceMemory.AutoSize = true;
+            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 1);
+            this.lblDeviceMemory.Name = "lblDeviceMemory";
+            this.lblDeviceMemory.Size = new System.Drawing.Size(81, 13);
+            this.lblDeviceMemory.TabIndex = 18;
+            this.lblDeviceMemory.Text = "Device Memory";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -410,23 +410,23 @@
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.btnConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
+            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Bootloader - ASOS";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
-            this.tabDeviceMemory.ResumeLayout(false);
-            this.tableLayoutPanel3.ResumeLayout(false);
-            this.tableLayoutPanel3.PerformLayout();
             this.tabFile.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
+            this.tabDeviceMemory.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
