@@ -21,9 +21,8 @@ namespace Bootloader
         public PACKET_STATUS    packet_status;
         public PACKET_TYPE      packet_type;
 
-        public UINT8[] tx_buffer = new UINT8[255];
-        public UINT8[] rx_buffer = new UINT8[255];
         public List<UINT8> txBuffer = new List<UINT8>();
+        public List<UINT8> rxBuffer = new List<UINT8>();
 
         public bool PAKET_HAZIR_FLAG = false;
     }
