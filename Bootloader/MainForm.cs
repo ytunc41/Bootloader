@@ -48,7 +48,7 @@ namespace Bootloader
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
-            serialPort.SetPort("COM6", 115200);
+            serialPort.SetPort("COM21", 115200);
         }
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
@@ -73,8 +73,6 @@ namespace Bootloader
             lock(paket_coz)
             {
                 PaketCoz(args.Data);
-                if (true)
-                    Console.WriteLine(" adsfg ");
             }
         }
         
@@ -109,14 +107,23 @@ namespace Bootloader
 
         private void FlashSizePaketTopla()
         {
-            int flashSize = BitConverter.ToInt32(ReceivedPacket.data, 0);
+            UINT8 paket_sayaci = 0;
+            UINT16 flashSize = 0;
+
+            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
         }
 
         private void UniqueIDPaketTopla()
         {
-            uint uniq1 = BitConverter.ToUInt32(ReceivedPacket.data, 0);
-            uint uniq2 = BitConverter.ToUInt32(ReceivedPacket.data, 4);
-            uint uniq3 = BitConverter.ToUInt32(ReceivedPacket.data, 8);
+            UINT8 paket_sayaci = 0;
+
+            UINT32 u_id1 = 0;
+            UINT32 u_id2 = 0;
+            UINT32 u_id3 = 0;
+
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
         }
 
         private UINT32 paketCount;
@@ -287,6 +294,7 @@ namespace Bootloader
             Console.WriteLine("Serial port connection status = {0}", args.Connected);
 
             bool portStatus = serialPort.IsConnected;
+
             if (portStatus)
             {
                 Baglanti_Istek_PaketOlustur();
@@ -297,6 +305,7 @@ namespace Bootloader
         private void Baglanti_Istek_PaketOlustur()
         {
             UINT8 paket_sayaci = 0;
+
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
         }

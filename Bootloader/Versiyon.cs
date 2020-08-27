@@ -13,8 +13,15 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.6";
+            _versiyon = "v1.0.7";
         }
+
+
+        /* Versiyon: 1.0.7
+         * Tarih: 27.08.2020
+         * 
+         * - FlashSizeTopla() ve UniqueIDTopla() metodlarında düzeltmeler yapilmistir.
+         */
 
         /* Versiyon: 1.0.6
          * Tarih: 27.08.2020
