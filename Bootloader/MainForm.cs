@@ -72,7 +72,7 @@ namespace Bootloader
 
         void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
         {
-            lock(paket_coz)
+            lock(seriport_rx)
             {
                 PaketCoz(args.Data);
             }
@@ -86,8 +86,10 @@ namespace Bootloader
             commPro.txBuffer.Add(SendPacket.packetType);
             commPro.txBuffer.Add(++SendPacket.packetCounter);
             commPro.txBuffer.Add(SendPacket.dataSize);
+
             for (int i = 0; i < SendPacket.dataSize; i++)
                 commPro.txBuffer.Add(SendPacket.data[i]);
+
             commPro.txBuffer.Add(SendPacket.crc1);
             commPro.txBuffer.Add(SendPacket.crc2);
 
@@ -134,6 +136,7 @@ namespace Bootloader
         private void PaketCoz(UINT8[] data)
         {
             UINT8 VERI_BOYUTU = 0;
+
             lock (seriport_rx)
             {
                 foreach (UINT8 byte_u8 in data)

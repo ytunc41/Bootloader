@@ -13,9 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.7";
+            _versiyon = "v1.0.8";
         }
 
+        /* Versiyon: 1.0.8
+         * Tarih: 27.08.2020
+         * 
+         * - serialPortLib.dll dosyasında degisiklik yapilmistir.
+         * - Forma icon eklenmistir.
+         * 
+         */
 
         /* Versiyon: 1.0.7
          * Tarih: 27.08.2020
