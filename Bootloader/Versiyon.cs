@@ -21,6 +21,8 @@ namespace Bootloader
          * Tarih: 27.08.2020
          * 
          * - FlashSizeTopla() ve UniqueIDTopla() metodlarında düzeltmeler yapilmistir.
+         * - Bug fixed.
+         * 
          */
 
         /* Versiyon: 1.0.6

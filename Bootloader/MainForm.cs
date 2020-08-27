@@ -45,10 +45,12 @@ namespace Bootloader
             InitializeComponent();
             this.Text += " " + Versiyon.getVS;
 
+            CheckForIllegalCrossThreadCalls = false;
+
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
-            serialPort.SetPort("COM21", 115200);
+            serialPort.SetPort("COM8", 115200);
         }
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
@@ -313,8 +315,9 @@ namespace Bootloader
         private void ErasePaketOlustur()
         {
             UINT8 paket_sayaci = 0;
+
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE;
         }
 
         private void btnErase_Click(object sender, EventArgs e)
