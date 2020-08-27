@@ -467,10 +467,12 @@ namespace Bootloader
         {
             if (fileChunk.datas.Count != 0)
                 DataChunkToWriteListView(fileChunk, listViewFile);
-            else if (deviceMemory.datas.Count != 0)
-                DataChunkToWriteListView(deviceMemory, listViewDevice);
             else
                 MessageBox.Show("First of all, upload hex file or connect device.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            if (deviceMemory.datas.Count != 0)
+                DataChunkToWriteListView(deviceMemory, listViewDevice);
+            
         }
 
         private bool HexFileToDataChunk(string _filePath, DataChunk fileChunk)
