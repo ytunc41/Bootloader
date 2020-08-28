@@ -14,25 +14,24 @@ namespace Bootloader
         private int _startAddr;
         public int startAddr { get { return _startAddr; } set { _startAddr = value; } }
         private int _memAddres;
-        public int memAddres
-        {
+        public int memAddres{
             get
             {
                 _memAddres = (_baseAddr << 16) + _startAddr;
                 return _memAddres;
             }
-            private set
-            {
-                _memAddres = value;
-            }
+            private set { _memAddres = value; }
         }
+
+        
+
 
         private Dictionary<int, List<byte>> _dataChunk = new Dictionary<int, List<byte>>();
         public Dictionary<int, List<byte>> datas { get { return _dataChunk; } private set { _dataChunk = value; } }
 
-        public DataChunk(int _base = 0)
+        public DataChunk()
         {
-            _baseAddr = _base;
+            
         }
 
         public void AddByte(List<byte> data)

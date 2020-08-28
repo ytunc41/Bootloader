@@ -13,9 +13,28 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.7";
+            _versiyon = "v1.0.10";
         }
 
+        /* Versiyon: 1.0.10
+         * Tarih: 28.08.2020
+         * 
+         * - Stm cihazi icin Device nesnesi eklenmistir.
+         * - Cihaza ozel olan flashSize, uniqueID ve diger ozellikler Device nesnesi icinde saklanmistir.
+         * - Otomatik olarak cihazın com portunu bulmasi icin SerialPortDetect metodu eklenmistir.
+         */
+
+        /* Versiyon: 1.0.9
+         * Tarih: 27.08.2020
+         * 
+         * - 8/16/32 bit gösterimdeki hata duzeltildi.
+         */
+
+        /* Versiyon: 1.0.8
+         * Tarih: 27.08.2020
+         * 
+         * - SerialPortLib.dll degisiklik yapilmistir.
+         */
 
         /* Versiyon: 1.0.7
          * Tarih: 27.08.2020

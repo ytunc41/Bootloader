@@ -27,6 +27,7 @@ using FLOAT64 = System.Double;
 using SerialPortLib;
 using NLog;
 using System.Reflection;
+using System.Management;
 
 namespace Bootloader
 {
@@ -36,7 +37,7 @@ namespace Bootloader
         private readonly object paket_coz = new object();
 
         DataChunk fileChunk = new DataChunk();
-        DataChunk deviceMemory = new DataChunk();
+        Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
         private static SerialPortInput serialPort;
 
@@ -48,7 +49,42 @@ namespace Bootloader
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
-            serialPort.SetPort("COM21", 115200);
+            SerialPortDetect();
+        }
+
+        private void SerialPortDetect()
+        {
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PnPEntity");
+                foreach (ManagementObject queryObj in searcher.Get())
+                {
+                    if (queryObj["Caption"] != null)
+                    {
+                        if (queryObj["Caption"].ToString().Contains("(COM"))
+                        {
+                            string comName = queryObj["Name"].ToString();   // USB Seri Cihaz (COM6)
+                            
+                            if (comName.IndexOf("Stm") == -1 || comName.IndexOf("USB Seri Cihaz") == -1)
+                            {
+                                string comVal = comName.Substring(comName.IndexOf("COM"), comName.IndexOf(")") - comName.IndexOf("COM"));
+                                serialPort.SetPort(comVal, 115200);
+                            }
+                            else
+                            {
+                                MessageBox.Show("The device was not found automatically!", "Serial Port Connection", 0, MessageBoxIcon.Information);
+                                // eğer cihazı bu kosulda bulamiyorsa cihazı secin diye bir uyarı mesajı cikarilabilir.
+                                // uyari mesajinin evet yanitina karsilik yeni acilacak bir formda tum comportlar gosterilip oradan secim yaptirilabilir.
+                                // secilen com'a gore de serialPort.SetPort() metodu calistirilir.
+                            }
+                        }
+                    }
+                }
+            }
+            catch (ManagementException)
+            {
+                MessageBox.Show("Unknown Error");
+            }
         }
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
@@ -67,7 +103,6 @@ namespace Bootloader
         }
 
         #region Communication Method/Events
-
         void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
         {
             lock(paket_coz)
@@ -103,6 +138,28 @@ namespace Bootloader
                 data.Add(ReceivedPacket.data[i]);
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
+
+            /*
+            // bu işlem tüm veri alımı bitip tüm metot işlemlerinden çıktıktan sonra yapılmalıdır!
+            // yoksa thread'ler çakışıyor aq nedense bilmiyorum.
+            // bu nedenle thread içine alınıp diğer işlemler bittikten sonra bu thread çalıştırılabilir.
+            // şu an buna kafam basmıyor aq. bu yuzden paket gonderme islemlerine bakacam.
+            if (sofErr == 0 && crcErr == 0)
+            {
+                if (paketCount == deviceMemory.totalPacket)
+                {
+                    if (serialPort.IsConnected)
+                    {
+                        tabControl1.SelectedTab = tabDeviceMemory;
+                        DataChunkToWriteListView(deviceMemory, listViewDevice);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Checksum error found while receiving data!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            */
         }
 
         private void FlashSizePaketTopla()
@@ -111,12 +168,12 @@ namespace Bootloader
             UINT16 flashSize = 0;
 
             Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
+            deviceMemory.flashSize = flashSize;
         }
 
         private void UniqueIDPaketTopla()
         {
             UINT8 paket_sayaci = 0;
-
             UINT32 u_id1 = 0;
             UINT32 u_id2 = 0;
             UINT32 u_id3 = 0;
@@ -124,6 +181,9 @@ namespace Bootloader
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
+            deviceMemory.uniqueID.Add(u_id1);
+            deviceMemory.uniqueID.Add(u_id2);
+            deviceMemory.uniqueID.Add(u_id3);
         }
 
         private UINT32 paketCount;
@@ -290,12 +350,11 @@ namespace Bootloader
             deviceMemory.ClearAll();
             listViewDevice.Clear();
             paketCount = 0; sofErr = 0; crcErr = 0;
-            lblStatus.Text = " Serial port connection status : " + args.Connected.ToString();
+
+            lblStatus.Text = " Serial port connection status : " + args.Connected;
             Console.WriteLine("Serial port connection status = {0}", args.Connected);
 
-            bool portStatus = serialPort.IsConnected;
-
-            if (portStatus)
+            if (serialPort.IsConnected)
             {
                 Baglanti_Istek_PaketOlustur();
                 PaketGonder(commPro);
@@ -305,7 +364,6 @@ namespace Bootloader
         private void Baglanti_Istek_PaketOlustur()
         {
             UINT8 paket_sayaci = 0;
-
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
         }
@@ -339,8 +397,12 @@ namespace Bootloader
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            tabControl1.SelectedTab = tabDeviceMemory;
-            DataChunkToWriteListView(deviceMemory, listViewDevice);
+            if (serialPort.IsConnected)
+            {
+                tabControl1.SelectedTab = tabDeviceMemory;
+                DataChunkToWriteListView(deviceMemory, listViewDevice);
+            }
+                
         }
         
         private void btnOpen_Click(object sender, EventArgs e)
@@ -459,12 +521,21 @@ namespace Bootloader
 
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (fileChunk.datas.Count != 0)
-                DataChunkToWriteListView(fileChunk, listViewFile);
-            else if (deviceMemory.datas.Count != 0)
-                DataChunkToWriteListView(deviceMemory, listViewDevice);
-            else
+            if (fileChunk.datas.Count == 0 && deviceMemory.datas.Count == 0)
+            {
                 MessageBox.Show("First of all, upload hex file or connect device.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                if (fileChunk.datas.Count != 0)
+                {
+                    DataChunkToWriteListView(fileChunk, listViewFile);
+                }
+                if (deviceMemory.datas.Count != 0)
+                {
+                    DataChunkToWriteListView(deviceMemory, listViewDevice);
+                }
+            }
         }
 
         private bool HexFileToDataChunk(string _filePath, DataChunk fileChunk)
