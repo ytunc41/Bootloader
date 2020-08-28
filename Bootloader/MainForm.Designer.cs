@@ -256,7 +256,7 @@
             this.btnVerify.Name = "btnVerify";
             this.btnVerify.Size = new System.Drawing.Size(44, 44);
             this.btnVerify.TabIndex = 14;
-            this.tooltipInfo.SetToolTip(this.btnVerify, "Full chip erase.");
+            this.tooltipInfo.SetToolTip(this.btnVerify, "Verify program.");
             this.btnVerify.UseVisualStyleBackColor = true;
             this.btnVerify.Click += new System.EventHandler(this.btnVerify_Click);
             // 
@@ -410,9 +410,9 @@
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.btnConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Bootloader - ASOS";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);

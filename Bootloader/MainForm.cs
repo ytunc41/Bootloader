@@ -192,15 +192,19 @@ namespace Bootloader
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE;
         }
         private void VeriPaketOlustur(int addr)
         {
             UINT8 paket_sayaci = 0;
+
             int dataCount = fileChunk.datas[addr].Count;
+
             Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
+
             for (int i = 0; i < dataCount; i++)
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
+
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM;
         }
