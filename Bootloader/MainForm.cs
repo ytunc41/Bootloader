@@ -36,7 +36,7 @@ namespace Bootloader
         private readonly object seriport_rx = new object();
         private readonly object paket_coz = new object();
 
-        DataChunk fileChunk = new DataChunk();
+        HexFile fileChunk = new HexFile();
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
         private static SerialPortInput serialPort;
@@ -110,26 +110,45 @@ namespace Bootloader
                 PaketCoz(args.Data);
             }
         }
-        
-        private void PaketGonder(CommPro commPro)
+        void SerialPort_ConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
         {
-            commPro.txBuffer.Clear();
-            commPro.txBuffer.Add(SendPacket.sof1);
-            commPro.txBuffer.Add(SendPacket.sof2);
-            commPro.txBuffer.Add(SendPacket.packetType);
-            commPro.txBuffer.Add(++SendPacket.packetCounter);
-            commPro.txBuffer.Add(SendPacket.dataSize);
-            for (int i = 0; i < SendPacket.dataSize; i++)
-                commPro.txBuffer.Add(SendPacket.data[i]);
-            commPro.txBuffer.Add(SendPacket.crc1);
-            commPro.txBuffer.Add(SendPacket.crc2);
+            deviceMemory.ClearAll();
+            listViewDevice.Clear();
+            paketCount = 0; sofErr = 0; crcErr = 0;
+
+            lblStatus.Text = " Serial port connection status : " + args.Connected;
+            Console.WriteLine("Serial port connection status = {0}", args.Connected);
 
             if (serialPort.IsConnected)
-                serialPort.SendMessage(commPro.txBuffer.ToArray());
-            else
-                MessageBox.Show("The connection was lost while sending the package!", "Serial Port Connection", 0, MessageBoxIcon.Error);
+            {
+                BaglantiPaketOlustur();
+                PaketGonder(commPro);
+            }
         }
-        
+
+        // PaketTopla Metotlari
+        private void FlashSizePaketTopla()
+        {
+            UINT8 paket_sayaci = 0;
+            UINT16 flashSize = 0;
+
+            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
+            deviceMemory.flashSize = flashSize;
+        }
+        private void UniqueIDPaketTopla()
+        {
+            UINT8 paket_sayaci = 0;
+            UINT32 u_id1 = 0;
+            UINT32 u_id2 = 0;
+            UINT32 u_id3 = 0;
+
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
+            deviceMemory.uniqueID[0] = u_id1;
+            deviceMemory.uniqueID[1] = u_id2;
+            deviceMemory.uniqueID[2] = u_id3;
+        }
         private void VeriPaketTopla()
         {
             int addr = BitConverter.ToInt32(ReceivedPacket.data, 0);
@@ -162,33 +181,52 @@ namespace Bootloader
             */
         }
 
-        private void FlashSizePaketTopla()
+        // PaketOlustur Metotlari
+        private void BaglantiPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
-            UINT16 flashSize = 0;
-
-            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
-            deviceMemory.flashSize = flashSize;
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
         }
-
-        private void UniqueIDPaketTopla()
+        private void ErasePaketOlustur()
         {
             UINT8 paket_sayaci = 0;
-            UINT32 u_id1 = 0;
-            UINT32 u_id2 = 0;
-            UINT32 u_id3 = 0;
-
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
-            deviceMemory.uniqueID.Add(u_id1);
-            deviceMemory.uniqueID.Add(u_id2);
-            deviceMemory.uniqueID.Add(u_id3);
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+        }
+        private void VeriPaketOlustur(int addr)
+        {
+            UINT8 paket_sayaci = 0;
+            int dataCount = fileChunk.datas[addr].Count;
+            Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
+            for (int i = 0; i < dataCount; i++)
+                Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM;
         }
 
-        private UINT32 paketCount;
-        private UINT32 sofErr;
-        private UINT32 crcErr;
+        // PaketGonder Metodu
+        private void PaketGonder(CommPro commPro)
+        {
+            commPro.txBuffer.Clear();
+            commPro.txBuffer.Add(SendPacket.sof1);
+            commPro.txBuffer.Add(SendPacket.sof2);
+            commPro.txBuffer.Add(SendPacket.packetType);
+            commPro.txBuffer.Add(++SendPacket.packetCounter);
+            commPro.txBuffer.Add(SendPacket.dataSize);
+            for (int i = 0; i < SendPacket.dataSize; i++)
+                commPro.txBuffer.Add(SendPacket.data[i]);
+            commPro.txBuffer.Add(SendPacket.crc1);
+            commPro.txBuffer.Add(SendPacket.crc2);
+
+            if (serialPort.IsConnected)
+                serialPort.SendMessage(commPro.txBuffer.ToArray());
+            else
+                MessageBox.Show("The connection was lost while sending the package!", "Serial Port Connection", 0, MessageBoxIcon.Error);
+        }
+
+        // PaketCoz Metodu
+        private UINT32 paketCount, sofErr, crcErr;
         private void PaketCoz(UINT8[] data)
         {
             UINT8 VERI_BOYUTU = 0;
@@ -340,47 +378,10 @@ namespace Bootloader
 
             } /*  lock (seriport_rx) */
 
-        } /* private void PaketCoz(UINT8[] data) */
-
+        }
         #endregion
 
-
-        void SerialPort_ConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
-        {
-            deviceMemory.ClearAll();
-            listViewDevice.Clear();
-            paketCount = 0; sofErr = 0; crcErr = 0;
-
-            lblStatus.Text = " Serial port connection status : " + args.Connected;
-            Console.WriteLine("Serial port connection status = {0}", args.Connected);
-
-            if (serialPort.IsConnected)
-            {
-                Baglanti_Istek_PaketOlustur();
-                PaketGonder(commPro);
-            }
-        }
-
-        private void Baglanti_Istek_PaketOlustur()
-        {
-            UINT8 paket_sayaci = 0;
-            SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
-        }
-
-        private void ErasePaketOlustur()
-        {
-            UINT8 paket_sayaci = 0;
-            SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
-        }
-
-        private void btnErase_Click(object sender, EventArgs e)
-        {
-            ErasePaketOlustur();
-            PaketGonder(commPro);
-        }
-
+        // Buton Click Eventlari
         private void btnConnect_Click(object sender, EventArgs e)
         {
             if (!serialPort.IsConnected)    // Cihaz bağlı değilse
@@ -397,14 +398,42 @@ namespace Bootloader
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            // daha sonra buton kaldirilacak
             if (serialPort.IsConnected)
             {
                 tabControl1.SelectedTab = tabDeviceMemory;
                 DataChunkToWriteListView(deviceMemory, listViewDevice);
             }
-                
         }
-        
+        private void btnErase_Click(object sender, EventArgs e)
+        {
+            ErasePaketOlustur();
+            PaketGonder(commPro);
+        }
+        private void btnVerify_Click(object sender, EventArgs e)
+        {
+            if (serialPort.IsConnected)
+            {
+                if (fileChunk.datas.Count != 0)
+                {
+                    int addr = fileChunk.addrMin;
+                    int count = fileChunk.datas.Keys.Count;
+                    for (int i = 0; i < count; i++, addr += 16)
+                    {
+                        VeriPaketOlustur(addr);
+                        PaketGonder(commPro);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("First of all, upload hex file.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show("The device is not connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
         private void btnOpen_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -427,19 +456,19 @@ namespace Bootloader
 
         }
 
-        private void TabFileTextProcess(string filePath, DataChunk fileChunk)
+        // Verileri Yazdirma Metotlari
+        private void TabFileTextProcess(string filePath, HexFile fileChunk)
         {
             tabControl1.SelectedTab = tabFile;
             char[] chars = { '\\' };
             string[] words = filePath.Split(chars);
             string fileText = words[words.Length - 1].ToString();
             tabFile.Text = "File: " + fileText;
-            string addrMax = "0x" + (fileChunk.datas.Keys.Max() + fileChunk.datas[fileChunk.datas.Keys.Max()].Count).ToString("X8");
-            string addr = "0x" + (fileChunk.baseAddr << 16).ToString("X8");
-            lblFileInfo.Text = "[" + fileText + "]" + ",  " + "Address Range: " + "[" + addr + " " + addrMax + "]";
+            string addrMax = "0x" + (fileChunk.addrMax).ToString("X8");
+            string addrMin = "0x" + (fileChunk.addrMin).ToString("X8");
+            lblFileInfo.Text = "[" + fileText + "]" + ",  " + "Address Range: " + "[" + addrMin + " " + addrMax + "]";
         }
-
-        private void DataChunkToWriteListView(DataChunk dataChunk, ListView listView)
+        private void DataChunkToWriteListView(HexFile dataChunk, ListView listView)
         {
             listView.Clear();
 
@@ -469,9 +498,8 @@ namespace Bootloader
             #endregion
 
             int dataCount = 16;
-            int count = dataChunk.datas.Keys.Count;
-            int addrMax = dataChunk.datas.Keys.Max() + dataChunk.datas[dataChunk.datas.Keys.Max()].Count;
-            int addrMin = dataChunk.datas.Keys.Min();
+            int addrMax = dataChunk.addrMax;
+            int addrMin = dataChunk.addrMin;
             int addr = addrMin;
             ListViewItem lst;
             List<string> listString;
@@ -518,12 +546,89 @@ namespace Bootloader
             }
 
         }
+        private void DataChunkToWriteListView(Device dataChunk, ListView listView)
+        {
+            listView.Clear();
 
+            #region Adding column headers according to bits. (8,16,32 bits)
+            listView.Columns.Add("Address", 90);
+            for (int i = 0; i < 16; i++)
+            {
+                if (cmbDataWidth.SelectedIndex == 0)
+                {
+                    listView.Columns.Add(i.ToString("X"), 40);
+                }
+                else if (cmbDataWidth.SelectedIndex == 1)
+                {
+                    if (i % 2 == 1)
+                    {
+                        listView.Columns.Add((i - 1).ToString("X"), 65);
+                    }
+                }
+                else if (cmbDataWidth.SelectedIndex == 2)
+                {
+                    if (i % 4 == 3)
+                    {
+                        listView.Columns.Add((i - 3).ToString("X"), 90);
+                    }
+                }
+            }
+            #endregion
+
+            int dataCount = 16;
+            int addrMax = dataChunk.addrMax;
+            int addrMin = dataChunk.addrMin;
+            int addr = addrMin;
+            ListViewItem lst;
+            List<string> listString;
+
+            for (int i = 0; addr < addrMax; i++, addr += dataCount)
+            {
+                if (dataChunk.datas.ContainsKey(addr) == false)
+                {
+                    continue;
+                }
+                listString = new List<string>();
+                listString.Add("0x" + addr.ToString("X8"));
+                for (int j = 0; j < dataChunk.datas[addr].Count; j++)
+                {
+                    if ((addr + j) < addrMax)
+                    {
+                        if (cmbDataWidth.SelectedIndex == 0)    // 8 bits
+                        {
+                            listString.Add(dataChunk.datas[addr][j].ToString("X2"));
+                        }
+                        else if (cmbDataWidth.SelectedIndex == 1)    // 16 bits
+                        {
+                            if (j % 2 == 1)
+                            {
+                                listString.Add(((dataChunk.datas[addr][j] << 8) + dataChunk.datas[addr][j - 1]).ToString("X4"));
+                            }
+                        }
+                        else if (cmbDataWidth.SelectedIndex == 2)    // 32 bits
+                        {
+                            if (j % 4 == 3)
+                            {
+                                listString.Add(((dataChunk.datas[addr][j] << 24) + (dataChunk.datas[addr][j - 1] << 16) + (dataChunk.datas[addr][j - 2] << 8) + dataChunk.datas[addr][j - 3]).ToString("X8"));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                string[] str = listString.ToArray();
+                lst = new ListViewItem(str);
+                listView.Items.Add(lst);
+            }
+
+        }
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (fileChunk.datas.Count == 0 && deviceMemory.datas.Count == 0)
             {
-                MessageBox.Show("First of all, upload hex file or connect device.  ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("First of all, upload hex file or connect device.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
@@ -537,8 +642,7 @@ namespace Bootloader
                 }
             }
         }
-
-        private bool HexFileToDataChunk(string _filePath, DataChunk fileChunk)
+        private bool HexFileToDataChunk(string _filePath, HexFile fileChunk)
         {
             string filePath = _filePath;
             string line = string.Empty;
@@ -697,14 +801,12 @@ namespace Bootloader
             Console.WriteLine("\nFile Content at path: " + filePath + "\nLine numbers: " + lineNum.ToString());
             return errFlag;
         }
-
         private int Read(string line, int index, int byteCount)
         {
             string val = line.Substring(index, byteCount * 2);
             int value = Convert.ToInt32(val, 16);
             return value;
         }
-
         private int ReadData(string dataRaw, ref byte[] data, int byteCount = 1)
         {
             int check = 0;
@@ -715,13 +817,6 @@ namespace Bootloader
             }
             return check;
         }
-
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        
         #region WriteDataGridView (inactive)
         //private void WriteDataGridView(DataChunk dataChunk)
         //{
@@ -761,6 +856,7 @@ namespace Bootloader
 
         #endregion
 
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (serialPort.IsConnected)
@@ -768,5 +864,6 @@ namespace Bootloader
                 serialPort.Disconnect();
             }
         }
+
     }
 }

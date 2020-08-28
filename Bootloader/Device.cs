@@ -8,24 +8,36 @@ namespace Bootloader
 {
     public class Device : DataChunk
     {
-        private List<uint> _uniqueID = new List<uint>();
-        public List<uint> uniqueID { get { return _uniqueID; } set { _uniqueID = value; } }
-        private int _flashSize;
+        private static Dictionary<int, List<byte>> _device = new Dictionary<int, List<byte>>();
+        public Dictionary<int, List<byte>> datas { get { return _device; } private set { _device = value; } }
+
+        private static uint[] _uniqueID = new uint[3];
+        public uint[] uniqueID { get { return _uniqueID; } set { _uniqueID = value; } }
+        private static int _flashSize;
         public int flashSize { get { return _flashSize; } set { _flashSize = value; } }
-        private int _sectorValue;
-        public int sectorValue { get { return _sectorValue; } private set { _sectorValue = value; } }
-        private int _sectorPacketVal;
-        public int sectorPacketVal { get { return _sectorPacketVal; } private set { _sectorPacketVal = value; } }
-        private int _totalPacket;
+        private static int _sectorValue;
+        public int sectorValue { get { _sectorValue = 1024; /*1kbyte*/ return _sectorValue; } private set { _sectorValue = value; } }
+        private static int _sectorPacketVal;
+        public int sectorPacketVal { get { _sectorPacketVal = sectorValue / 16; return _sectorPacketVal; } private set { _sectorPacketVal = value; } }
+        private static int _totalPacket;
         public int totalPacket { get { _totalPacket = sectorPacketVal * flashSize; return _totalPacket; } private set { _totalPacket = value; } }
 
-        public Device()
+        private static int _addrMin;
+        public int addrMin { get { _addrMin = this.datas.Keys.Min(); return _addrMin; } private set { _addrMin = value; } }
+        private static int _addrMax;
+        public int addrMax { get { _addrMax = datas.Keys.Max() + datas[datas.Keys.Max()].Count; return _addrMax; } private set { _addrMax = value; } }
+
+        public void AddHT(int addr, List<byte> data)
         {
-            this.sectorValue = 1024;    // 1kbyte.
-            this.sectorPacketVal = this.sectorValue / 16;   // 1 sektörde 64 paket olmuş olur.
+            datas.Add(addr, data);
         }
 
-
+        public void ClearAll()
+        {
+            datas.Clear();
+            baseAddr = 0;
+            startAddr = 0;
+        }
 
     }
 }

@@ -13,13 +13,21 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.10";
+            _versiyon = "v1.0.11";
         }
+
+        /* Versiyon: 1.0.11
+         * Tarih: 28.08.2020
+         * 
+         * - DataChunk ve Device nesnelerinde duzenlemeler yapilmistir.
+         * - HexFile nesnesi eklenip DataChunk classindan ayristirilmistir.
+         * - Hex dosyasini stm32 cihazina gondermek icin VeriPaketOlustur metodu ve VerifyClick eventi eklenmistir.
+         */
 
         /* Versiyon: 1.0.10
          * Tarih: 28.08.2020
          * 
-         * - Stm cihazi icin Device nesnesi eklenmistir.
+         * - Stm32 cihazi icin Device nesnesi eklenmistir.
          * - Cihaza ozel olan flashSize, uniqueID ve diger ozellikler Device nesnesi icinde saklanmistir.
          * - Otomatik olarak cihazın com portunu bulmasi icin SerialPortDetect metodu eklenmistir.
          */
