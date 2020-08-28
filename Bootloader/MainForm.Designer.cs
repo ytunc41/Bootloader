@@ -148,6 +148,7 @@
             this.txtSize.TabIndex = 3;
             this.txtSize.Text = "0x1000";
             this.txtSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtSize.Enter += new System.EventHandler(this.txtSize_Enter);
             // 
             // lblSize
             // 
@@ -421,6 +422,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ASOS Bootloader";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabControl1.ResumeLayout(false);

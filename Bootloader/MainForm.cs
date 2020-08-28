@@ -39,6 +39,7 @@ namespace Bootloader
         HexFile fileChunk = new HexFile();
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
+        List<string> comNames = new List<string>();
         private static SerialPortInput serialPort;
 
         public MainForm()
@@ -47,15 +48,17 @@ namespace Bootloader
             this.Text += " - " + Versiyon.getVS;
 
             //CheckForIllegalCrossThreadCalls = false;
-
+        }
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
             SerialPortDetect();
         }
-
         private void SerialPortDetect()
         {
+            comNames.Clear();
             try
             {
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PnPEntity");
@@ -65,20 +68,7 @@ namespace Bootloader
                     {
                         if (queryObj["Caption"].ToString().Contains("(COM"))
                         {
-                            string comName = queryObj["Name"].ToString();   // USB Seri Cihaz (COM6)
-                            
-                            if (comName.IndexOf("STM") != -1 || comName.IndexOf("USB Seri Cihaz") != -1)
-                            {
-                                string comVal = comName.Substring(comName.IndexOf("(COM") + 1, comName.IndexOf(")") - (comName.IndexOf("(COM") + 1)); 
-                                serialPort.SetPort(comVal, 115200);
-                            }
-                            else
-                            {
-                                //MessageBox.Show("The device was not found automatically!", "Serial Port Connection", 0, MessageBoxIcon.Information);
-                                // eğer cihazı bu kosulda bulamiyorsa cihazı secin diye bir uyarı mesajı cikarilabilir.
-                                // uyari mesajinin evet yanitina karsilik yeni acilacak bir formda tum comportlar gosterilip oradan secim yaptirilabilir.
-                                // secilen com'a gore de serialPort.SetPort() metodu calistirilir.
-                            }
+                            comNames.Add(queryObj["Name"].ToString());
                         }
                     }
                 }
@@ -88,6 +78,23 @@ namespace Bootloader
                 MessageBox.Show("Unknown Error");
             }
         }
+
+        private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
+        }
+        private void SeriPortForm_VisibleChanged(object sender, EventArgs e)
+        {
+            SerialPortForm seriPortForm = (SerialPortForm)sender;
+            if (!seriPortForm.Visible)
+            {
+                string comName = seriPortForm.ReturnText;
+                string comVal = comName.Substring(comName.IndexOf("(COM") + 1, comName.IndexOf(")") - (comName.IndexOf("(COM") + 1));
+                serialPort.SetPort(comVal, 115200);
+                seriPortForm.Dispose();
+            }
+        }
+
 
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
@@ -391,10 +398,46 @@ namespace Bootloader
         // Buton Click Eventlari
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            if (!serialPort.IsConnected)    // Cihaz bağlı değilse
-                serialPort.Connect();
-            else                           // Cihaz bağlı ise
+            if (!serialPort.IsConnected)
+            {
+                if (comNames.Count != 0)
+                {
+                    foreach (var item in comNames)
+                    {
+                        if (item.IndexOf("STM") != -1 || item.IndexOf("USB Seri Cihaz asdfg") != -1)
+                        {
+                            string comVal = item.Substring(item.IndexOf("(COM") + 1, item.IndexOf(")") - (item.IndexOf("(COM") + 1));
+                            serialPort.SetPort(comVal, 115200);
+                            serialPort.Connect();
+                            lblStatus.Text = "Status: The ST device was found automatically!";
+                            break;
+                        }
+                        else
+                        {
+                            var retVal = MessageBox.Show("The device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                            if (retVal.ToString() == "Yes")
+                            {
+                                SerialPortForm seriPortForm = new SerialPortForm(comNames);
+                                seriPortForm.VisibleChanged += SeriPortForm_VisibleChanged;
+                                seriPortForm.FormClosed += SeriPortForm_FormClosed;
+                                seriPortForm.Show();
+                            }
+                            else
+                            {
+                                lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    lblStatus.Text = "Status: Com port connected to computer not found! Please click refresh button!";
+                }
+            }
+            else
+            {
                 MessageBox.Show("The device is already connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }   
         }
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
@@ -815,12 +858,6 @@ namespace Bootloader
             int value = Convert.ToInt32(val, 16);
             return value;
         }
-
-        private void listViewDataWrite_DoWork(object sender, DoWorkEventArgs e)
-        {
-            DataChunkToWriteListView(deviceMemory, listViewDevice);
-        }
-
         private int ReadData(string dataRaw, ref byte[] data, int byteCount = 1)
         {
             int check = 0;
@@ -831,7 +868,7 @@ namespace Bootloader
             }
             return check;
         }
-        #region WriteDataGridView (inactive)
+        #region DataChunk to Write DataGridView (inactive)
         //private void WriteDataGridView(DataChunk dataChunk)
         //{
         //    dataGrid.ColumnCount = 17;
@@ -870,6 +907,11 @@ namespace Bootloader
 
         #endregion
 
+        private void txtSize_Enter(object sender, EventArgs e)
+        {
+            //TextBox t1 = (TextBox)sender;
+            //t1.Text = string.Empty;
+        }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -877,7 +919,14 @@ namespace Bootloader
             {
                 serialPort.Disconnect();
             }
+            serialPort.Disconnect();
         }
 
+        private void listViewDataWrite_DoWork(object sender, DoWorkEventArgs e)
+        {
+            DataChunkToWriteListView(deviceMemory, listViewDevice);
+        }
+
+        
     }
 }

@@ -35,8 +35,10 @@ namespace Bootloader
         public void ClearAll()
         {
             datas.Clear();
-            baseAddr = 0;
-            startAddr = 0;
+            this.baseAddr = 0;
+            this.startAddr = 0;
+            this.addrMax = 0;
+            this.addrMin = 0;
         }
 
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bootloader
 {
-    public class DataChunk
+    public abstract class DataChunk
     {
         private static int _baseAddr;
         public int baseAddr { get { return _baseAddr; } set { _baseAddr = value; } }

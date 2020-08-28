@@ -13,8 +13,18 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.13";
+            _versiyon = "v1.0.14";
         }
+
+        /* Versiyon: 1.0.14
+         * Tarih: 28.08.2020
+         * 
+         * - HexFile ve Device siniflarinda guncellemeler yapilmistir.
+         * - SerialPortDetect metodu guncellenmistir.
+         * - bntConnect Click event'i guncellenmistir.
+         * - SerialPortForm nesnesi olusturulmustur.
+         * - Otomatik olarak bulunamayan ST cihazi icin com secmek amaciyla com'lari listelemek icin kullanilir.
+         */
 
         /* Versiyon: 1.0.13
          * Tarih: 28.08.2020
