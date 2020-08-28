@@ -13,16 +13,23 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.12";
+            _versiyon = "v1.0.13";
         }
+
+        /* Versiyon: 1.0.13
+         * Tarih: 28.08.2020
+         * 
+         * - SerialPortDetect metodu guncellenmistir.
+         * - Form isminde degisiklik yapilmistir.
+         */
 
         /* Versiyon: 1.0.12
          * Tarih: 28.08.2020
          * 
          * - Full Erase Chip komutu altında göndermeden once deviceMemory.ClearAll() silme komutu eklendi.
-         * 
+         * - Form'a icon eklenmistir.
+         * - SerialPortDetect metodundaki hatalar duzeltilmistir.
          */
-
 
         /* Versiyon: 1.0.11
          * Tarih: 28.08.2020

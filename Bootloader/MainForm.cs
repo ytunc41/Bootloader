@@ -44,7 +44,7 @@ namespace Bootloader
         public MainForm()
         {
             InitializeComponent();
-            this.Text += " " + Versiyon.getVS;
+            this.Text += " - " + Versiyon.getVS;
 
             //CheckForIllegalCrossThreadCalls = false;
 
