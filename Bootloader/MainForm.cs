@@ -46,6 +46,8 @@ namespace Bootloader
             InitializeComponent();
             this.Text += " " + Versiyon.getVS;
 
+            //CheckForIllegalCrossThreadCalls = false;
+
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
@@ -65,14 +67,14 @@ namespace Bootloader
                         {
                             string comName = queryObj["Name"].ToString();   // USB Seri Cihaz (COM6)
                             
-                            if (comName.IndexOf("Stm") == -1 || comName.IndexOf("USB Seri Cihaz") == -1)
+                            if (comName.IndexOf("STM") != -1 || comName.IndexOf("USB Seri Cihaz") != -1)
                             {
-                                string comVal = comName.Substring(comName.IndexOf("COM"), comName.IndexOf(")") - comName.IndexOf("COM"));
+                                string comVal = comName.Substring(comName.IndexOf("(COM") + 1, comName.IndexOf(")") - (comName.IndexOf("(COM") + 1)); 
                                 serialPort.SetPort(comVal, 115200);
                             }
                             else
                             {
-                                MessageBox.Show("The device was not found automatically!", "Serial Port Connection", 0, MessageBoxIcon.Information);
+                                //MessageBox.Show("The device was not found automatically!", "Serial Port Connection", 0, MessageBoxIcon.Information);
                                 // eğer cihazı bu kosulda bulamiyorsa cihazı secin diye bir uyarı mesajı cikarilabilir.
                                 // uyari mesajinin evet yanitina karsilik yeni acilacak bir formda tum comportlar gosterilip oradan secim yaptirilabilir.
                                 // secilen com'a gore de serialPort.SetPort() metodu calistirilir.
@@ -171,14 +173,15 @@ namespace Bootloader
                     {
                         tabControl1.SelectedTab = tabDeviceMemory;
                         DataChunkToWriteListView(deviceMemory, listViewDevice);
+                        //listViewDataWrite.RunWorkerAsync();
                     }
                 }
             }
             else
             {
                 MessageBox.Show("Checksum error found while receiving data!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            */
+            }*/
+            
         }
 
         // PaketOlustur Metotlari
@@ -411,6 +414,7 @@ namespace Bootloader
         }
         private void btnErase_Click(object sender, EventArgs e)
         {
+            deviceMemory.ClearAll();
             ErasePaketOlustur();
             PaketGonder(commPro);
         }
@@ -811,6 +815,12 @@ namespace Bootloader
             int value = Convert.ToInt32(val, 16);
             return value;
         }
+
+        private void listViewDataWrite_DoWork(object sender, DoWorkEventArgs e)
+        {
+            DataChunkToWriteListView(deviceMemory, listViewDevice);
+        }
+
         private int ReadData(string dataRaw, ref byte[] data, int byteCount = 1)
         {
             int check = 0;

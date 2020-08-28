@@ -13,8 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.11";
+            _versiyon = "v1.0.12";
         }
+
+        /* Versiyon: 1.0.12
+         * Tarih: 28.08.2020
+         * 
+         * - Full Erase Chip komutu altında göndermeden once deviceMemory.ClearAll() silme komutu eklendi.
+         * 
+         */
+
 
         /* Versiyon: 1.0.11
          * Tarih: 28.08.2020
