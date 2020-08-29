@@ -14,6 +14,11 @@ namespace Bootloader
         [STAThread]
         static void Main()
         {
+            MessageBoxManager.Register();
+            MessageBoxManager.Yes = "Yes";
+            MessageBoxManager.No = "No";
+            MessageBoxManager.OK = "OK";
+            MessageBoxManager.Cancel = "Cancel";
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

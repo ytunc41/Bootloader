@@ -46,11 +46,7 @@ namespace Bootloader
         {
             InitializeComponent();
             this.Text += " - " + Versiyon.getVS;
-
             //CheckForIllegalCrossThreadCalls = false;
-        }
-        private void MainForm_Shown(object sender, EventArgs e)
-        {
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
@@ -79,23 +75,6 @@ namespace Bootloader
             }
         }
 
-        private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
-        }
-        private void SeriPortForm_VisibleChanged(object sender, EventArgs e)
-        {
-            SerialPortForm seriPortForm = (SerialPortForm)sender;
-            if (!seriPortForm.Visible)
-            {
-                string comName = seriPortForm.ReturnText;
-                string comVal = comName.Substring(comName.IndexOf("(COM") + 1, comName.IndexOf(")") - (comName.IndexOf("(COM") + 1));
-                serialPort.SetPort(comVal, 115200);
-                seriPortForm.Dispose();
-            }
-        }
-
-
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
         {
@@ -112,6 +91,7 @@ namespace Bootloader
         }
 
         #region Communication Method/Events
+        // SerialPort Eventlari
         void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
         {
             lock(paket_coz)
@@ -125,14 +105,14 @@ namespace Bootloader
             listViewDevice.Clear();
             paketCount = 0; sofErr = 0; crcErr = 0;
 
-            lblStatus.Text = " Serial port connection status : " + args.Connected;
-            Console.WriteLine("Serial port connection status = {0}", args.Connected);
-
-            if (serialPort.IsConnected)
+            if (args.Connected)
             {
                 BaglantiPaketOlustur();
                 PaketGonder(commPro);
+                lblStatus.Text = "Status: Connected!";
             }
+            else
+                lblStatus.Text = "Status: Disconnected!";
         }
 
         // PaketTopla Metotlari
@@ -166,29 +146,6 @@ namespace Bootloader
                 data.Add(ReceivedPacket.data[i]);
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
-
-            /*
-            // bu işlem tüm veri alımı bitip tüm metot işlemlerinden çıktıktan sonra yapılmalıdır!
-            // yoksa thread'ler çakışıyor aq nedense bilmiyorum.
-            // bu nedenle thread içine alınıp diğer işlemler bittikten sonra bu thread çalıştırılabilir.
-            // şu an buna kafam basmıyor aq. bu yuzden paket gonderme islemlerine bakacam.
-            if (sofErr == 0 && crcErr == 0)
-            {
-                if (paketCount == deviceMemory.totalPacket)
-                {
-                    if (serialPort.IsConnected)
-                    {
-                        tabControl1.SelectedTab = tabDeviceMemory;
-                        DataChunkToWriteListView(deviceMemory, listViewDevice);
-                        //listViewDataWrite.RunWorkerAsync();
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Checksum error found while receiving data!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }*/
-            
         }
 
         // PaketOlustur Metotlari
@@ -395,48 +352,71 @@ namespace Bootloader
         }
         #endregion
 
+        // SeriPortForm Eventlari
+        private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
+        }
+        private void SeriPortForm_VisibleChanged(object sender, EventArgs e)
+        {
+            SerialPortForm seriPortForm = (SerialPortForm)sender;
+            if (!seriPortForm.Visible)
+            {
+                string comName = seriPortForm.ReturnText;
+                string comVal = comName.Substring(comName.IndexOf("(COM") + 1, comName.IndexOf(")") - (comName.IndexOf("(COM") + 1));
+                serialPort.SetPort(comVal, 115200);
+                serialPort.Connect();
+                seriPortForm.Dispose();
+            }
+        }
+
         // Buton Click Eventlari
         private void btnConnect_Click(object sender, EventArgs e)
         {
+            string device = string.Empty;
             if (!serialPort.IsConnected)
             {
                 if (comNames.Count != 0)
                 {
                     foreach (var item in comNames)
                     {
-                        if (item.IndexOf("STM") != -1 || item.IndexOf("USB Seri Cihaz asdfg") != -1)
+                        if (item.IndexOf("STM") != -1 || item.IndexOf("USB Seri Cihaz") != -1)
                         {
-                            string comVal = item.Substring(item.IndexOf("(COM") + 1, item.IndexOf(")") - (item.IndexOf("(COM") + 1));
-                            serialPort.SetPort(comVal, 115200);
-                            serialPort.Connect();
-                            lblStatus.Text = "Status: The ST device was found automatically!";
+                            device = item;
                             break;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(device))
+                    {
+                        string comVal = device.Substring(device.IndexOf("(COM") + 1, device.IndexOf(")") - (device.IndexOf("(COM") + 1));
+                        serialPort.SetPort(comVal, 115200);
+                        serialPort.Connect();
+                    }
+                    else
+                    {
+                        var retVal = MessageBox.Show("The ST device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                        if (retVal.ToString() == "Yes")
+                        {
+                            SerialPortForm seriPortForm = new SerialPortForm(comNames);
+                            seriPortForm.VisibleChanged += SeriPortForm_VisibleChanged;
+                            seriPortForm.FormClosed += SeriPortForm_FormClosed;
+                            seriPortForm.Show();
                         }
                         else
                         {
-                            var retVal = MessageBox.Show("The device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-                            if (retVal.ToString() == "Yes")
-                            {
-                                SerialPortForm seriPortForm = new SerialPortForm(comNames);
-                                seriPortForm.VisibleChanged += SeriPortForm_VisibleChanged;
-                                seriPortForm.FormClosed += SeriPortForm_FormClosed;
-                                seriPortForm.Show();
-                            }
-                            else
-                            {
-                                lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
-                            }
+                            lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
                         }
                     }
                 }
                 else
                 {
-                    lblStatus.Text = "Status: Com port connected to computer not found! Please click refresh button!";
+                    lblStatus.Text = "Status: Com port connected to computer not found! If your ST device is connected, please click the refresh button!";
+                    MessageBox.Show("The ST device not detected!", "Serial Port Connection", 0, MessageBoxIcon.Information);
                 }
             }
             else
             {
-                MessageBox.Show("The device is already connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The device is already connected!", "Serial Port Connection", 0, MessageBoxIcon.Information);
             }   
         }
         private void btnDisconnect_Click(object sender, EventArgs e)
@@ -444,22 +424,45 @@ namespace Bootloader
             if (serialPort.IsConnected)
                 serialPort.Disconnect();
             else
-                MessageBox.Show("The device is not already connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The device is not already connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            // daha sonra buton kaldirilacak
+            //SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
+            // Bu işlemler veri alimi bittikten sonra yapilacak!
             if (serialPort.IsConnected)
             {
-                tabControl1.SelectedTab = tabDeviceMemory;
-                DataChunkToWriteListView(deviceMemory, listViewDevice);
+                if (deviceMemory.datas.Count != 0)
+                {
+                    if (paketCount == deviceMemory.totalPacket && sofErr == 0 && crcErr == 0)
+                    {
+                        tabControl1.SelectedTab = tabDeviceMemory;
+                        DataChunkToWriteListView(deviceMemory, listViewDevice);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Checksum error found while receiving data!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+
             }
         }
         private void btnErase_Click(object sender, EventArgs e)
         {
-            deviceMemory.ClearAll();
-            ErasePaketOlustur();
-            PaketGonder(commPro);
+            if (serialPort.IsConnected)
+            {
+                deviceMemory.ClearAll();
+                ErasePaketOlustur();
+                PaketGonder(commPro);
+            }
+            else
+            {
+                lblStatus.Text = "Status: The ST device is not connected!";
+                MessageBox.Show("The ST device is not connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
         private void btnVerify_Click(object sender, EventArgs e)
         {
@@ -482,7 +485,8 @@ namespace Bootloader
             }
             else
             {
-                MessageBox.Show("The device is not connected!", "Serial Port Connection Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                lblStatus.Text = "Status: The ST device is not connected!";
+                MessageBox.Show("The ST device is not connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void btnOpen_Click(object sender, EventArgs e)
@@ -504,7 +508,6 @@ namespace Bootloader
                     }
                 }
             }
-
         }
 
         // Verileri Yazdirma Metotlari

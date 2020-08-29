@@ -23,6 +23,7 @@ namespace Bootloader
 
         private void btnComPortConnect_Click(object sender, EventArgs e)
         {
+            lstbxComPort.SelectedIndex = 0;
             if (lstbxComPort.SelectedIndex != -1)
             {
                 this.ReturnText = lstbxComPort.SelectedItem.ToString();

@@ -13,15 +13,24 @@ namespace Bootloader
 
         static Versiyon()
         {
-            _versiyon = "v1.0.14";
+            getVS = "v1.0.15";
         }
 
+        /* Versiyon: 1.0.15
+         * Tarih: 29.08.2020
+         * 
+         * - HexFile ve Device siniflarinda guncellemeler yapilmistir.
+         * - SeriPortForm eventlari eklenmistir.
+         * - btnConnect ve btnRefresh Click eventlari guncellenmistir.
+         * - Program.cs nesnesine eklemeler yapilmistir.
+         */
+
         /* Versiyon: 1.0.14
-         * Tarih: 28.08.2020
+         * Tarih: 29.08.2020
          * 
          * - HexFile ve Device siniflarinda guncellemeler yapilmistir.
          * - SerialPortDetect metodu guncellenmistir.
-         * - bntConnect Click event'i guncellenmistir.
+         * - btnConnect Click event'i guncellenmistir.
          * - SerialPortForm nesnesi olusturulmustur.
          * - Otomatik olarak bulunamayan ST cihazi icin com secmek amaciyla com'lari listelemek icin kullanilir.
          */
