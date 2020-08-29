@@ -65,12 +65,19 @@ namespace Bootloader
 
     public enum PACKET_TYPE
     {
-        BAGLANTI = 0,
-        PROGRAM,
-        READ,
+        BAGLANTI_REQ = 0,
+        BAGLANTI_OK,
+        PROGRAM_REQ,
+        PROGRAM_OK,
+        PROGRAM_ERROR,
+        READ_REQ,
+        READ_OK,
+        READ_ERROR,
         FLASH_SIZE,
         UNIQUE_ID,
-        ERASE
+        ERASE_REQ,
+        ERASE_OK,
+        ERASE_ERROR
     }
 
     public enum CHECK_STATUS

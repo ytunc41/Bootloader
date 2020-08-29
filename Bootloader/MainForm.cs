@@ -109,6 +109,10 @@ namespace Bootloader
             {
                 BaglantiPaketOlustur();
                 PaketGonder(commPro);
+
+                OkumaPaketOlustur();
+                PaketGonder(commPro);
+
                 lblStatus.Text = "Status: Connected!";
             }
             else
@@ -153,13 +157,20 @@ namespace Bootloader
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI_REQ;
+        }
+
+        private void OkumaPaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.READ_REQ;
         }
         private void ErasePaketOlustur()
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE_REQ;
         }
         private void VeriPaketOlustur(int addr)
         {
@@ -173,8 +184,15 @@ namespace Bootloader
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
 
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_REQ;
         }
+        private void Program_CRC_PaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
+        }
+      
 
         // PaketGonder Metodu
         private void PaketGonder(CommPro commPro)
@@ -185,11 +203,13 @@ namespace Bootloader
             commPro.txBuffer.Add(SendPacket.packetType);
             commPro.txBuffer.Add(++SendPacket.packetCounter);
             commPro.txBuffer.Add(SendPacket.dataSize);
+
             for (int i = 0; i < SendPacket.dataSize; i++)
                 commPro.txBuffer.Add(SendPacket.data[i]);
+
             commPro.txBuffer.Add(SendPacket.crc1);
             commPro.txBuffer.Add(SendPacket.crc2);
-
+      
             if (serialPort.IsConnected)
                 serialPort.SendMessage(commPro.txBuffer.ToArray());
             else
@@ -197,7 +217,7 @@ namespace Bootloader
         }
 
         // PaketCoz Metodu
-        private UINT32 paketCount, sofErr, crcErr;
+        public UINT32 paketCount, sofErr, crcErr;
         private void PaketCoz(UINT8[] data)
         {
             UINT8 VERI_BOYUTU = 0;
@@ -312,10 +332,24 @@ namespace Bootloader
                     {
                         switch (ReceivedPacket.packetType)
                         {
-                            case (UINT8)PACKET_TYPE.READ:
+                            case (UINT8)PACKET_TYPE.BAGLANTI_OK:
+                                {
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.READ_REQ:
                                 {
                                     Console.WriteLine("Veri Paketi: " + ++paketCount);
                                     VeriPaketTopla();
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.READ_OK:
+                                {
+
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.READ_ERROR:
+                                {
+
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.FLASH_SIZE:
@@ -328,12 +362,27 @@ namespace Bootloader
                                     UniqueIDPaketTopla();
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.PROGRAM:
+                            case (UINT8)PACKET_TYPE.PROGRAM_REQ:
                                 {
 
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.ERASE:
+                            case (UINT8)PACKET_TYPE.PROGRAM_OK:
+                                {
+
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.ERASE_REQ:
+                                {
+
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.ERASE_OK:
+                                {
+
+                                    break;
+                                }
+                            case (UINT8)PACKET_TYPE.ERASE_ERROR:
                                 {
 
                                     break;
@@ -342,6 +391,7 @@ namespace Bootloader
                             default:
                                 break;
                         }
+
                         commPro.PAKET_HAZIR_FLAG = false;
                     } /* if(commPro.PAKET_HAZIR_FLAG) */
 
@@ -351,6 +401,43 @@ namespace Bootloader
 
         }
         #endregion
+
+        #region CRC16
+        public static ushort crc_calculate(byte[] pBuffer, int length)
+        {
+            if (length < 1)
+            {
+                return 0xffff;
+            }
+            // For a "message" of length bytes contained in the unsigned char array
+            // pointed to by pBuffer, calculate the CRC
+            // crcCalculate(unsigned char* pBuffer, int length, unsigned short* checkConst) < not needed
+
+            ushort crcTmp;
+            int i;
+
+            crcTmp = 0xffff;
+
+            for (i = 2; i < length; i++) // skips header
+            {
+                crcTmp = crc_accumulate(pBuffer[i], crcTmp);
+                //Console.WriteLine(crcTmp + " " + pBuffer[i] + " " + length);
+            }
+
+            return (crcTmp);
+        }
+
+        public static ushort crc_accumulate(byte b, ushort crc)
+        {
+            unchecked
+            {
+                byte ch = (byte)(b ^ (byte)(crc & 0x00ff));
+                ch = (byte)(ch ^ (ch << 4));
+                return (ushort)((crc >> 8) ^ (ch << 8) ^ (ch << 3) ^ (ch >> 4));
+            }
+        }
+        #endregion
+
 
         // SeriPortForm Eventlari
         private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -430,6 +517,7 @@ namespace Bootloader
         {
             //SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
             // Bu işlemler veri alimi bittikten sonra yapilacak!
+
             if (serialPort.IsConnected)
             {
                 if (deviceMemory.datas.Count != 0)
@@ -455,6 +543,8 @@ namespace Bootloader
             if (serialPort.IsConnected)
             {
                 deviceMemory.ClearAll();
+                paketCount = 0;
+
                 ErasePaketOlustur();
                 PaketGonder(commPro);
             }
@@ -472,11 +562,15 @@ namespace Bootloader
                 {
                     int addr = fileChunk.addrMin;
                     int count = fileChunk.datas.Keys.Count;
+
                     for (int i = 0; i < count; i++, addr += 16)
                     {
                         VeriPaketOlustur(addr);
                         PaketGonder(commPro);
                     }
+
+                    Program_CRC_PaketOlustur();
+                    PaketGonder(commPro);
                 }
                 else
                 {
@@ -871,6 +965,7 @@ namespace Bootloader
             }
             return check;
         }
+
         #region DataChunk to Write DataGridView (inactive)
         //private void WriteDataGridView(DataChunk dataChunk)
         //{
@@ -922,7 +1017,7 @@ namespace Bootloader
             {
                 serialPort.Disconnect();
             }
-            serialPort.Disconnect();
+
         }
 
         private void listViewDataWrite_DoWork(object sender, DoWorkEventArgs e)

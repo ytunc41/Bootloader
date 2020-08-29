@@ -33,3 +33,11 @@ C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csp
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete
 C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csprojAssemblyReference.cache
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.SerialPortForm.resources
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.SerialPortForm.resources
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\Eco.Handles.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\Eco.Interfaces.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\Eco.LinqExtender.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\Eco.WPF.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\WECPOFLogic.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\WPFViewModelExternalControls.dll
+C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\System.Buffers.dll

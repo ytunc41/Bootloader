@@ -39,6 +39,7 @@ namespace Bootloader
             this.startAddr = 0;
             this.addrMax = 0;
             this.addrMin = 0;
+            this.totalPacket = 0;
         }
 
     }

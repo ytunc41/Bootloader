@@ -13,8 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.0.15";
+            getVS = "v1.1.0";
         }
+
+        /* Versiyon: 1.1.0
+         * Tarih: 30.08.2020
+         * 
+         * - Yeni paket türleri eklenmistir.
+         * - Baglanti islemi esnasında hem baglanti paketi hem okuma paketi gonderilmistir.
+         * 
+         */
 
         /* Versiyon: 1.0.15
          * Tarih: 29.08.2020

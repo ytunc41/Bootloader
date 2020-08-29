@@ -33,6 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Eco.Handles, Version=7.0.0.12468, Culture=neutral, PublicKeyToken=46a833be9e90de8c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoCore.7.0.0.12468\lib\net40\Eco.Handles.dll</HintPath>
+    </Reference>
+    <Reference Include="Eco.Interfaces, Version=7.0.0.12468, Culture=neutral, PublicKeyToken=46a833be9e90de8c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoCore.7.0.0.12468\lib\net40\Eco.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Eco.LinqExtender, Version=7.0.0.12468, Culture=neutral, PublicKeyToken=46a833be9e90de8c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoCore.7.0.0.12468\lib\net40\Eco.LinqExtender.dll</HintPath>
+    </Reference>
+    <Reference Include="Eco.WPF, Version=7.0.0.12468, Culture=neutral, PublicKeyToken=46a833be9e90de8c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoWpf.7.0.0.12468\lib\net40\Eco.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="MessageBoxManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\MessageBoxManager.dll</HintPath>
@@ -61,6 +73,12 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WECPOFLogic, Version=7.0.0.12468, Culture=neutral, PublicKeyToken=46a833be9e90de8c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoWpf.7.0.0.12468\lib\net40\WECPOFLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="WPFViewModelExternalControls, Version=7.0.0.12468, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcoWpf.7.0.0.12468\lib\net40\WPFViewModelExternalControls.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataChunk.cs" />
@@ -98,6 +116,7 @@
     <EmbeddedResource Include="SerialPortForm.resx">
       <DependentUpon>SerialPortForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
