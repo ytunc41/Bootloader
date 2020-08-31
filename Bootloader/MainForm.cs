@@ -178,7 +178,7 @@ namespace Bootloader
 
             int dataCount = fileChunk.datas[addr].Count;
 
-            Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
+            //Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
 
             for (int i = 0; i < dataCount; i++)
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
