@@ -59,7 +59,6 @@
             this.lblFileInfo = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.listViewDataWrite = new System.ComponentModel.BackgroundWorker();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -396,10 +395,6 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 509);
             this.tableLayoutPanel1.TabIndex = 13;
             // 
-            // listViewDataWrite
-            // 
-            this.listViewDataWrite.DoWork += new System.ComponentModel.DoWorkEventHandler(this.listViewDataWrite_DoWork);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -422,6 +417,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ASOS Bootloader";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
@@ -469,7 +465,6 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.ListView listViewDevice;
         private System.Windows.Forms.Label lblDeviceMemory;
-        private System.ComponentModel.BackgroundWorker listViewDataWrite;
     }
 }
 

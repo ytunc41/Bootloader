@@ -571,6 +571,7 @@ namespace Bootloader
 
                     Program_CRC_PaketOlustur();
                     PaketGonder(commPro);
+
                 }
                 else
                 {
@@ -595,6 +596,7 @@ namespace Bootloader
                 {
                     string filePath = openFileDialog.FileName;
                     bool errFlag = HexFileToDataChunk(filePath, fileChunk);
+
                     if (!errFlag)
                     {
                         TabFileTextProcess(filePath, fileChunk);
@@ -618,9 +620,12 @@ namespace Bootloader
         }
         private void DataChunkToWriteListView(HexFile dataChunk, ListView listView)
         {
+            listView.BeginUpdate();
+
             listView.Clear();
 
             #region Adding column headers according to bits. (8,16,32 bits)
+
             listView.Columns.Add("Address", 90);
             for (int i = 0; i < 16; i++)
             {
@@ -649,8 +654,12 @@ namespace Bootloader
             int addrMax = dataChunk.addrMax;
             int addrMin = dataChunk.addrMin;
             int addr = addrMin;
+
             ListViewItem lst;
             List<string> listString;
+
+            var items = new List<ListViewItem>();
+
 
             for (int i = 0; addr < addrMax; i++, addr += dataCount)
             {
@@ -690,12 +699,21 @@ namespace Bootloader
                 }
                 string[] str = listString.ToArray();
                 lst = new ListViewItem(str);
-                listView.Items.Add(lst);
+
+                items.Add(lst);
+
+                //listView.Items.Add(lst);
             }
+
+            ListViewItem[] arr = items.ToArray();
+            listView.Items.AddRange(arr);
+            listView.EndUpdate();
 
         }
         private void DataChunkToWriteListView(Device dataChunk, ListView listView)
         {
+            listView.BeginUpdate();
+
             listView.Clear();
 
             #region Adding column headers according to bits. (8,16,32 bits)
@@ -730,14 +748,18 @@ namespace Bootloader
             ListViewItem lst;
             List<string> listString;
 
+            var items = new List<ListViewItem>();
+
             for (int i = 0; addr < addrMax; i++, addr += dataCount)
             {
                 if (dataChunk.datas.ContainsKey(addr) == false)
                 {
                     continue;
                 }
+
                 listString = new List<string>();
                 listString.Add("0x" + addr.ToString("X8"));
+
                 for (int j = 0; j < dataChunk.datas[addr].Count; j++)
                 {
                     if ((addr + j) < addrMax)
@@ -766,11 +788,17 @@ namespace Bootloader
                         break;
                     }
                 }
+
                 string[] str = listString.ToArray();
                 lst = new ListViewItem(str);
-                listView.Items.Add(lst);
-            }
 
+                items.Add(lst);
+
+                //listView.Items.Add(lst);
+            }
+            ListViewItem[] arr = items.ToArray();
+            listView.Items.AddRange(arr);
+            listView.EndUpdate();
         }
         private void cmbDataWidth_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1011,6 +1039,11 @@ namespace Bootloader
             //t1.Text = string.Empty;
         }
 
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (serialPort.IsConnected)
@@ -1018,13 +1051,8 @@ namespace Bootloader
                 serialPort.Disconnect();
             }
 
-        }
+            serialPort.Disconnect();
 
-        private void listViewDataWrite_DoWork(object sender, DoWorkEventArgs e)
-        {
-            DataChunkToWriteListView(deviceMemory, listViewDevice);
-        }
-
-        
+        }       
     }
 }

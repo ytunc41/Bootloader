@@ -13,15 +13,21 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.1.0";
+            getVS = "v1.1.1";
         }
+
+        /* Versiyon: 1.1.1
+         * Tarih: 31.08.2020
+         * 
+         * -ListView yazma islemleri icin yeni bir metot kullanilmistir.
+         * 
+         */
 
         /* Versiyon: 1.1.0
          * Tarih: 30.08.2020
          * 
          * - Yeni paket türleri eklenmistir.
-         * - Baglanti islemi esnasında hem baglanti paketi hem okuma paketi gonderilmistir.
-         * 
+         * - Baglanti islemi esnasında hem baglanti paketi hem okuma paketi gonderilmistir. 
          */
 
         /* Versiyon: 1.0.15
