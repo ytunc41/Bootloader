@@ -13,8 +13,15 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.1.1";
+            getVS = "v1.2.0";
         }
+
+
+        /* Versiyon: 1.2.0
+         * Tarih: 31.08.2020
+         * 
+         * - Program gonderme paketi icerisinde bulunan adres bilgisi paket iceriginden silinmistir.
+         */
 
         /* Versiyon: 1.1.1
          * Tarih: 31.08.2020
