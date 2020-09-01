@@ -19,11 +19,11 @@ namespace Bootloader
             InitializeComponent();
             foreach (var item in comNames)
                 lstbxComPort.Items.Add(item);
+            lstbxComPort.SelectedIndex = 0;
         }
 
         private void btnComPortConnect_Click(object sender, EventArgs e)
         {
-            lstbxComPort.SelectedIndex = 0;
             if (lstbxComPort.SelectedIndex != -1)
             {
                 this.ReturnText = lstbxComPort.SelectedItem.ToString();

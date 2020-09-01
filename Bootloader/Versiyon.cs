@@ -13,9 +13,17 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.2.0";
+            getVS = "v1.2.1";
         }
 
+        /* Versiyon: 1.2.1
+         * Tarih: 01.09.2020
+         * 
+         * - Static Helper nesnesi eklenmistir.
+         * - Programda yardimci olacak static metotlar burada tanimlanacaktir.
+         * - Information bilgi kutusu listview nesnesinin altına eklenmistir.
+         * - Program yukleme, hex file yukleme gibi islemlerdeki durumlar yazdirilmistir.
+         */
 
         /* Versiyon: 1.2.0
          * Tarih: 31.08.2020

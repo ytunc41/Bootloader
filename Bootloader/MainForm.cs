@@ -41,6 +41,7 @@ namespace Bootloader
         CommPro commPro = new CommPro();
         List<string> comNames = new List<string>();
         private static SerialPortInput serialPort;
+        DateTime dt = new DateTime();
 
         public MainForm()
         {
@@ -104,6 +105,7 @@ namespace Bootloader
             deviceMemory.ClearAll();
             listViewDevice.Clear();
             paketCount = 0; sofErr = 0; crcErr = 0;
+            rchtxtInfo.Text = string.Empty;
 
             if (args.Connected)
             {
@@ -159,7 +161,6 @@ namespace Bootloader
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI_REQ;
         }
-
         private void OkumaPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
@@ -478,6 +479,20 @@ namespace Bootloader
                         string comVal = device.Substring(device.IndexOf("(COM") + 1, device.IndexOf(")") - (device.IndexOf("(COM") + 1));
                         serialPort.SetPort(comVal, 115200);
                         serialPort.Connect();
+
+                        // Information kismina STM32, UNIQUE ID VE FLASH yazdirma islemi
+                        string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
+                        Helper.AppendText(rchtxtInfo, stm, Color.Green);
+
+                        for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
+                        {
+                            string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                            str += string.Format("Device Unique ID{0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
+                            Helper.AppendText(rchtxtInfo, str, Color.Green);
+                        }
+                        string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                        strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
+                        Helper.AppendText(rchtxtInfo, strf, Color.Purple);
                     }
                     else
                     {
@@ -601,6 +616,14 @@ namespace Bootloader
                     {
                         TabFileTextProcess(filePath, fileChunk);
                         DataChunkToWriteListView(fileChunk, listViewFile);
+                        string info = DateTime.Now.ToString("HH:mm:ss") + " --> ";
+                        Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " opened successfully.", Color.Green);
+                        Helper.AppendText(rchtxtInfo, info + "checksum: ", Color.Green);    // checksum degeri girilecek!
+                    }
+                    else
+                    {
+                        string info = DateTime.Now.ToString("HH:mm:ss") + " --> ";
+                        Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " Hex file not open successfully.", Color.Red);
                     }
                 }
             }
@@ -610,13 +633,10 @@ namespace Bootloader
         private void TabFileTextProcess(string filePath, HexFile fileChunk)
         {
             tabControl1.SelectedTab = tabFile;
-            char[] chars = { '\\' };
-            string[] words = filePath.Split(chars);
-            string fileText = words[words.Length - 1].ToString();
-            tabFile.Text = "File: " + fileText;
+            tabFile.Text = "File: " + fileChunk.fileText;
             string addrMax = "0x" + (fileChunk.addrMax).ToString("X8");
             string addrMin = "0x" + (fileChunk.addrMin).ToString("X8");
-            lblFileInfo.Text = "[" + fileText + "]" + ",  " + "Address Range: " + "[" + addrMin + " " + addrMax + "]";
+            lblFileInfo.Text = "[" + fileChunk.fileText + "]" + ",  " + "Address Range: " + "[" + addrMin + " " + addrMax + "]";
         }
         private void DataChunkToWriteListView(HexFile dataChunk, ListView listView)
         {
@@ -820,6 +840,10 @@ namespace Bootloader
         }
         private bool HexFileToDataChunk(string _filePath, HexFile fileChunk)
         {
+            char[] chars = { '\\' };
+            string[] words = _filePath.Split(chars);
+            fileChunk.fileText = words[words.Length - 1].ToString();
+
             string filePath = _filePath;
             string line = string.Empty;
             int lineNum = 0;
@@ -1038,6 +1062,10 @@ namespace Bootloader
             //TextBox t1 = (TextBox)sender;
             //t1.Text = string.Empty;
         }
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            
+        }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -1053,6 +1081,8 @@ namespace Bootloader
 
             serialPort.Disconnect();
 
-        }       
+        }
+
+        
     }
 }

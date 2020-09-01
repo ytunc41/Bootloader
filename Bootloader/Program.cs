@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WECPOFLogic;
+using MessageBoxManager = System.Windows.Forms.MessageBoxManager;
 
 namespace Bootloader
 {

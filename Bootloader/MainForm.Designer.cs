@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.imgButtons = new System.Windows.Forms.ImageList(this.components);
-            this.lblOtoConn = new System.Windows.Forms.Label();
             this.imgRefresh = new System.Windows.Forms.ImageList(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cmbDataWidth = new System.Windows.Forms.ComboBox();
@@ -59,6 +58,7 @@
             this.lblFileInfo = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.rchtxtInfo = new System.Windows.Forms.RichTextBox();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -82,15 +82,6 @@
             this.imgButtons.Images.SetKeyName(7, "eraser_icon.png");
             this.imgButtons.Images.SetKeyName(8, "usb_conn2.png");
             this.imgButtons.Images.SetKeyName(9, "usb_disconn2.png");
-            // 
-            // lblOtoConn
-            // 
-            this.lblOtoConn.AutoSize = true;
-            this.lblOtoConn.Location = new System.Drawing.Point(14, 62);
-            this.lblOtoConn.Name = "lblOtoConn";
-            this.lblOtoConn.Size = new System.Drawing.Size(43, 13);
-            this.lblOtoConn.TabIndex = 3;
-            this.lblOtoConn.Text = "Status: ";
             // 
             // imgRefresh
             // 
@@ -200,6 +191,7 @@
             this.btnSave.TabIndex = 6;
             this.tooltipInfo.SetToolTip(this.btnSave, "Save file.");
             this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnErase
             // 
@@ -233,7 +225,7 @@
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(44, 44);
             this.btnRefresh.TabIndex = 2;
-            this.tooltipInfo.SetToolTip(this.btnRefresh, "Refresh the connect.");
+            this.tooltipInfo.SetToolTip(this.btnRefresh, "Refresh the com device.");
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
@@ -269,7 +261,7 @@
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(845, 481);
+            this.tabControl1.Size = new System.Drawing.Size(845, 346);
             this.tabControl1.TabIndex = 12;
             // 
             // tabDeviceMemory
@@ -278,7 +270,7 @@
             this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
             this.tabDeviceMemory.Name = "tabDeviceMemory";
             this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 455);
+            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 320);
             this.tabDeviceMemory.TabIndex = 1;
             this.tabDeviceMemory.Text = "Device Memory";
             this.tabDeviceMemory.UseVisualStyleBackColor = true;
@@ -293,9 +285,9 @@
             this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 3.773585F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 96.22642F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 449);
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 314);
             this.tableLayoutPanel3.TabIndex = 18;
             // 
             // listViewDevice
@@ -304,9 +296,9 @@
             this.listViewDevice.FullRowSelect = true;
             this.listViewDevice.GridLines = true;
             this.listViewDevice.HideSelection = false;
-            this.listViewDevice.Location = new System.Drawing.Point(3, 19);
+            this.listViewDevice.Location = new System.Drawing.Point(3, 17);
             this.listViewDevice.Name = "listViewDevice";
-            this.listViewDevice.Size = new System.Drawing.Size(825, 427);
+            this.listViewDevice.Size = new System.Drawing.Size(825, 294);
             this.listViewDevice.TabIndex = 17;
             this.listViewDevice.UseCompatibleStateImageBehavior = false;
             this.listViewDevice.View = System.Windows.Forms.View.Details;
@@ -315,7 +307,7 @@
             // 
             this.lblDeviceMemory.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblDeviceMemory.AutoSize = true;
-            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 1);
+            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 0);
             this.lblDeviceMemory.Name = "lblDeviceMemory";
             this.lblDeviceMemory.Size = new System.Drawing.Size(81, 13);
             this.lblDeviceMemory.TabIndex = 18;
@@ -327,7 +319,7 @@
             this.tabFile.Location = new System.Drawing.Point(4, 22);
             this.tabFile.Name = "tabFile";
             this.tabFile.Padding = new System.Windows.Forms.Padding(3);
-            this.tabFile.Size = new System.Drawing.Size(837, 455);
+            this.tabFile.Size = new System.Drawing.Size(837, 320);
             this.tabFile.TabIndex = 0;
             this.tabFile.Text = "File";
             this.tabFile.UseVisualStyleBackColor = true;
@@ -342,9 +334,9 @@
             this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 2;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 3.773585F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 96.22642F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 449);
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 314);
             this.tableLayoutPanel2.TabIndex = 17;
             // 
             // listViewFile
@@ -353,9 +345,9 @@
             this.listViewFile.FullRowSelect = true;
             this.listViewFile.GridLines = true;
             this.listViewFile.HideSelection = false;
-            this.listViewFile.Location = new System.Drawing.Point(3, 19);
+            this.listViewFile.Location = new System.Drawing.Point(3, 17);
             this.listViewFile.Name = "listViewFile";
-            this.listViewFile.Size = new System.Drawing.Size(825, 427);
+            this.listViewFile.Size = new System.Drawing.Size(825, 294);
             this.listViewFile.TabIndex = 17;
             this.listViewFile.UseCompatibleStateImageBehavior = false;
             this.listViewFile.View = System.Windows.Forms.View.Details;
@@ -364,7 +356,7 @@
             // 
             this.lblFileInfo.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblFileInfo.AutoSize = true;
-            this.lblFileInfo.Location = new System.Drawing.Point(3, 1);
+            this.lblFileInfo.Location = new System.Drawing.Point(3, 0);
             this.lblFileInfo.Name = "lblFileInfo";
             this.lblFileInfo.Size = new System.Drawing.Size(23, 13);
             this.lblFileInfo.TabIndex = 18;
@@ -374,7 +366,7 @@
             // 
             this.lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(3, 491);
+            this.lblStatus.Location = new System.Drawing.Point(3, 492);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(43, 13);
             this.lblStatus.TabIndex = 16;
@@ -385,15 +377,26 @@
             // 
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 48.17861F));
-            this.tableLayoutPanel1.Controls.Add(this.lblStatus, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.lblStatus, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.rchtxtInfo, 0, 1);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 78);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.78455F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.215456F));
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72.13115F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 27.86885F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 509);
             this.tableLayoutPanel1.TabIndex = 13;
+            // 
+            // rchtxtInfo
+            // 
+            this.rchtxtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rchtxtInfo.Location = new System.Drawing.Point(3, 355);
+            this.rchtxtInfo.Name = "rchtxtInfo";
+            this.rchtxtInfo.Size = new System.Drawing.Size(845, 130);
+            this.rchtxtInfo.TabIndex = 17;
+            this.rchtxtInfo.Text = "";
             // 
             // MainForm
             // 
@@ -407,7 +410,6 @@
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnErase);
             this.Controls.Add(this.btnDisconnect);
-            this.Controls.Add(this.lblOtoConn);
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.btnConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -430,7 +432,6 @@
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -439,7 +440,6 @@
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.ImageList imgButtons;
         private System.Windows.Forms.Button btnRefresh;
-        private System.Windows.Forms.Label lblOtoConn;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.Button btnErase;
         private System.Windows.Forms.Button btnSave;
@@ -465,6 +465,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.ListView listViewDevice;
         private System.Windows.Forms.Label lblDeviceMemory;
+        private System.Windows.Forms.RichTextBox rchtxtInfo;
     }
 }
 

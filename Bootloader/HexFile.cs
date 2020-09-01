@@ -11,6 +11,9 @@ namespace Bootloader
         private static Dictionary<int, List<byte>> _file = new Dictionary<int, List<byte>>();
         public Dictionary<int, List<byte>> datas { get { return _file; } private set { _file = value; } }
 
+        private static string _fileText;
+        public string fileText { get { return _fileText; } set { _fileText = value; } }
+
         private static int _addrMin;
         public int addrMin { get { _addrMin = this.datas.Keys.Min(); return _addrMin; } private set { _addrMin = value; } }
         private static int _addrMax;
