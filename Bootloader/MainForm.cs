@@ -47,7 +47,7 @@ namespace Bootloader
         {
             InitializeComponent();
             this.Text += " - " + Versiyon.getVS;
-            //CheckForIllegalCrossThreadCalls = false;
+            CheckForIllegalCrossThreadCalls = false;
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
@@ -122,24 +122,23 @@ namespace Bootloader
         }
 
         // PaketTopla Metotlari
-        private void FlashSizePaketTopla()
-        {
-            UINT8 paket_sayaci = 0;
-            UINT16 flashSize = 0;
 
-            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
-            deviceMemory.flashSize = flashSize;
-        }
-        private void UniqueIDPaketTopla()
+        private void CihazBilgisiPaketTopla()
         {
             UINT8 paket_sayaci = 0;
+
             UINT32 u_id1 = 0;
             UINT32 u_id2 = 0;
             UINT32 u_id3 = 0;
 
+            UINT16 flashSize = 0;
+
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
+            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
+
+            deviceMemory.flashSize = flashSize;
             deviceMemory.uniqueID[0] = u_id1;
             deviceMemory.uniqueID[1] = u_id2;
             deviceMemory.uniqueID[2] = u_id3;
@@ -179,7 +178,7 @@ namespace Bootloader
 
             int dataCount = fileChunk.datas[addr].Count;
 
-            Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
+            //Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
 
             for (int i = 0; i < dataCount; i++)
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
@@ -335,6 +334,23 @@ namespace Bootloader
                         {
                             case (UINT8)PACKET_TYPE.BAGLANTI_OK:
                                 {
+                                    string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
+                                    Helper.AppendText(rchtxtInfo, stm, Color.Green);
+
+                                    CihazBilgisiPaketTopla();
+
+                                    for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
+                                    {
+                                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                                        str += string.Format("Device Unique ID{0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
+                                        Helper.AppendText(rchtxtInfo, str, Color.Green);
+                                    }
+
+
+                                    string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                                    strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
+                                    Helper.AppendText(rchtxtInfo, strf, Color.Purple);
+
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_REQ:
@@ -353,16 +369,7 @@ namespace Bootloader
 
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.FLASH_SIZE:
-                                {
-                                    FlashSizePaketTopla();
-                                    break;
-                                }
-                            case (UINT8)PACKET_TYPE.UNIQUE_ID:
-                                {
-                                    UniqueIDPaketTopla();
-                                    break;
-                                }
+
                             case (UINT8)PACKET_TYPE.PROGRAM_REQ:
                                 {
 
@@ -462,6 +469,7 @@ namespace Bootloader
         private void btnConnect_Click(object sender, EventArgs e)
         {
             string device = string.Empty;
+
             if (!serialPort.IsConnected)
             {
                 if (comNames.Count != 0)
@@ -474,25 +482,15 @@ namespace Bootloader
                             break;
                         }
                     }
+
                     if (!string.IsNullOrEmpty(device))
                     {
                         string comVal = device.Substring(device.IndexOf("(COM") + 1, device.IndexOf(")") - (device.IndexOf("(COM") + 1));
                         serialPort.SetPort(comVal, 115200);
                         serialPort.Connect();
 
-                        // Information kismina STM32, UNIQUE ID VE FLASH yazdirma islemi
-                        string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
-                        Helper.AppendText(rchtxtInfo, stm, Color.Green);
 
-                        for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
-                        {
-                            string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                            str += string.Format("Device Unique ID{0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
-                            Helper.AppendText(rchtxtInfo, str, Color.Green);
-                        }
-                        string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                        strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
-                        Helper.AppendText(rchtxtInfo, strf, Color.Purple);
+
                     }
                     else
                     {
@@ -530,7 +528,7 @@ namespace Bootloader
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            //SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
+            SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
             // Bu işlemler veri alimi bittikten sonra yapilacak!
 
             if (serialPort.IsConnected)

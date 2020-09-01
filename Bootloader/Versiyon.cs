@@ -13,8 +13,15 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.2.1";
+            getVS = "v1.3.0";
         }
+
+        /* Versiyon: 1.3.0
+         * Tarih: 02.09.2020
+         * 
+         * - FLASH_SIZE ve UNIQUE_ID paket türleri silinip BAGLANTI_OK paket türü altında birlestirilmistir.
+         * - FlashSizePaketTopla() ve UniqueIDPaketTopla() metotları silinip yerine CahizBilgisiTopla() olusturulmustur.
+         */
 
         /* Versiyon: 1.2.1
          * Tarih: 01.09.2020

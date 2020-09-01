@@ -73,8 +73,6 @@ namespace Bootloader
         READ_REQ,
         READ_OK,
         READ_ERROR,
-        FLASH_SIZE,
-        UNIQUE_ID,
         ERASE_REQ,
         ERASE_OK,
         ERASE_ERROR

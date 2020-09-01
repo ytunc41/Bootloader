@@ -31,7 +31,6 @@ C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.exe
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.pdb
 C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.csproj.CopyComplete
-C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csprojAssemblyReference.cache
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\obj\Debug\Bootloader.SerialPortForm.resources
 C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.SerialPortForm.resources
 C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\bin\Debug\Eco.Handles.dll
