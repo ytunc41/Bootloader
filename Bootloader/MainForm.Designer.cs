@@ -46,6 +46,7 @@
             this.btnRefresh = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnVerify = new System.Windows.Forms.Button();
+            this.btnExecute = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabDeviceMemory = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
@@ -58,7 +59,6 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.rchtxtInfo = new System.Windows.Forms.RichTextBox();
-            this.btnExecute = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -242,6 +242,18 @@
             this.btnVerify.UseVisualStyleBackColor = true;
             this.btnVerify.Click += new System.EventHandler(this.btnVerify_Click);
             // 
+            // btnExecute
+            // 
+            this.btnExecute.ImageKey = "start-32.png";
+            this.btnExecute.ImageList = this.imgButtons;
+            this.btnExecute.Location = new System.Drawing.Point(290, 12);
+            this.btnExecute.Name = "btnExecute";
+            this.btnExecute.Size = new System.Drawing.Size(44, 44);
+            this.btnExecute.TabIndex = 15;
+            this.tooltipInfo.SetToolTip(this.btnExecute, "Execute the program.");
+            this.btnExecute.UseVisualStyleBackColor = true;
+            this.btnExecute.Click += new System.EventHandler(this.btnExecute_Click);
+            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabDeviceMemory);
@@ -383,21 +395,11 @@
             this.rchtxtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rchtxtInfo.Location = new System.Drawing.Point(3, 355);
             this.rchtxtInfo.Name = "rchtxtInfo";
+            this.rchtxtInfo.ReadOnly = true;
+            this.rchtxtInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Horizontal;
             this.rchtxtInfo.Size = new System.Drawing.Size(845, 130);
             this.rchtxtInfo.TabIndex = 17;
             this.rchtxtInfo.Text = "";
-            // 
-            // btnExecute
-            // 
-            this.btnExecute.ImageKey = "start-32.png";
-            this.btnExecute.ImageList = this.imgButtons;
-            this.btnExecute.Location = new System.Drawing.Point(290, 12);
-            this.btnExecute.Name = "btnExecute";
-            this.btnExecute.Size = new System.Drawing.Size(44, 44);
-            this.btnExecute.TabIndex = 15;
-            this.tooltipInfo.SetToolTip(this.btnExecute, "Execute the program.");
-            this.btnExecute.UseVisualStyleBackColor = true;
-            this.btnExecute.Click += new System.EventHandler(this.btnExecute_Click);
             // 
             // MainForm
             // 

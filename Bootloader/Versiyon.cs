@@ -13,8 +13,20 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.3.1";
+            getVS = "v1.4.0";
         }
+
+        /* Versiyon: 1.4.0
+         * 
+         * Tarih: 02.09.2020
+         * 
+         * - Program verify edildikten sonra program flasha yazilir ve arayuze PROGRAM_OK paketi gelmektedir.
+         * - Execute Butonuna basıldıgında PROGRAM_RUN paketi gitmektedir.
+         * - Program Checksum bilgisi gonderilmistir.
+         * - Checksum dogru ise PROGRAM_OK paketi geri gonderilmis ve kullanici bilgilendirilmistir.
+         * - Info textbox icin eklemeler yapilmistir.
+         */
+
 
         /* Versiyon: 1.3.2
          * Tarih: 02.09.2020

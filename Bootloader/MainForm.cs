@@ -42,6 +42,8 @@ namespace Bootloader
         private static SerialPortInput serialPort;
         Stopwatch st = new Stopwatch();
 
+        UINT32 CRC32 = 0;
+
         public MainForm()
         {
             InitializeComponent();
@@ -169,8 +171,24 @@ namespace Bootloader
         private void Program_CRC_PaketOlustur()
         {
             UINT8 paket_sayaci = 0;
+
+            int dataCount = 16;
+            int addrMax = fileChunk.addrMax;
+            int addrMin = fileChunk.addrMin;
+            int addr = addrMin;
+
+            Paket_Islemleri_LE.UINT32_ayir(ref SendPacket.data, ref paket_sayaci, CRC32);
+
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
+        }
+
+        private void Program_RUN_PaketOlustur()
+        {
+            UINT8 paket_sayaci = 0;
+
+            SendPacket.dataSize = paket_sayaci;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_RUN;
         }
         
         // PaketGonder Metodu
@@ -318,11 +336,11 @@ namespace Bootloader
                                     string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
                                     Helper.AppendText(rchtxtInfo, stm, Color.Green);
 
-                                    string dev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Device ID: " + deviceMemory.devID);
-                                    Helper.AppendText(rchtxtInfo, dev, Color.Green);
+                                    //string dev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Device ID: " + deviceMemory.devID);
+                                    //Helper.AppendText(rchtxtInfo, dev, Color.Green);
 
-                                    string rev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Revision ID: " + deviceMemory.revID);
-                                    Helper.AppendText(rchtxtInfo, rev, Color.Green);
+                                    //string rev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Revision ID: " + deviceMemory.revID);
+                                    //Helper.AppendText(rchtxtInfo, rev, Color.Green);
 
                                     for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
                                     {
@@ -334,6 +352,7 @@ namespace Bootloader
                                     string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                     strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
                                     Helper.AppendText(rchtxtInfo, strf, Color.Purple);
+
 
                                     break;
                                 }
@@ -363,7 +382,32 @@ namespace Bootloader
                                 {
                                     string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                     elps += string.Format("Memory programmed in " + st.ElapsedMilliseconds + " milliseconds.");
+
+                                    elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
+                                    elps += "Verification...OK";
+
+                                    elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
+                                    elps += string.Format("Programmed memory Checksum: " + CRC32.ToString("X8"));
+
+
                                     Helper.AppendText(rchtxtInfo, elps, Color.Blue);
+
+                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                                    rchtxtInfo.ScrollToCaret();
+
+                                    st.Stop();
+
+                                    break;
+                                }
+
+                            case (UINT8)PACKET_TYPE.PROGRAM_ERROR:
+                                {
+                                    string str = "Checksum Error !";
+                                    Helper.AppendText(rchtxtInfo, str, Color.Red);
+
+                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                                    rchtxtInfo.ScrollToCaret();
+
                                     st.Stop();
 
                                     break;
@@ -375,6 +419,14 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_OK:
                                 {
+
+                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                                    elps += string.Format("Program memory erased.");
+
+                                    Helper.AppendText(rchtxtInfo, elps, Color.Blue);
+
+                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                                    rchtxtInfo.ScrollToCaret();
 
                                     break;
                                 }
@@ -540,8 +592,15 @@ namespace Bootloader
         {
             if (serialPort.IsConnected)
             {
-                Program_CRC_PaketOlustur();
+                Program_RUN_PaketOlustur();
                 PaketGonder(commPro);
+               
+                string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                elps += string.Format("Program is executed...");
+                Helper.AppendText(rchtxtInfo, elps, Color.Purple);
+
+                rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                rchtxtInfo.ScrollToCaret();
             }
             else
             {
@@ -557,6 +616,7 @@ namespace Bootloader
 
                 ErasePaketOlustur();
                 PaketGonder(commPro);
+
             }
             else
             {
@@ -571,6 +631,7 @@ namespace Bootloader
                 if (fileChunk.datas.Count != 0)
                 {
                     st.Start();
+
                     int addr = fileChunk.addrMin;
                     int count = fileChunk.datas.Keys.Count;
 
@@ -580,7 +641,10 @@ namespace Bootloader
                         PaketGonder(commPro);
                     }
 
-                    btnExecute.PerformClick();
+                    Program_CRC_PaketOlustur();
+                    PaketGonder(commPro);
+
+                    //btnExecute.PerformClick();
 
                 }
                 else
@@ -596,7 +660,7 @@ namespace Bootloader
             }
         }
         private void btnOpen_Click(object sender, EventArgs e)
-        {
+        {        
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "hex files (*.hex)|*.hex|All files (*.*)|*.*";
@@ -611,10 +675,37 @@ namespace Bootloader
                     if (!errFlag)
                     {
                         TabFileTextProcess(filePath, fileChunk);
+
+                        int dataCount = 16;
+                        int addrMax = fileChunk.addrMax;
+                        int addrMin = fileChunk.addrMin;
+                        int addr = addrMin;
+
                         DataChunkToWriteListView(fileChunk, listViewFile);
+
+                        CRC32 = 0;
+
+                        for (int i = 0; addr < addrMax; i++, addr += dataCount)
+                        {
+                            if (fileChunk.datas.ContainsKey(addr) == false)
+                            {
+                                continue;
+                            }
+
+                            for (int j = 0; j < fileChunk.datas[addr].Count; j++)
+                            {
+
+                                CRC32 += fileChunk.datas[addr][j];
+
+                            }
+                        }
+
                         string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                         Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " opened successfully.", Color.Green);
-                        Helper.AppendText(rchtxtInfo, info + "checksum: ", Color.Green);    // checksum degeri girilecek!
+                        Helper.AppendText(rchtxtInfo, info + "Checksum: " + CRC32.ToString("X8"), Color.Green);    // checksum degeri girilecek!
+
+                        rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                        rchtxtInfo.ScrollToCaret();
                     }
                     else
                     {

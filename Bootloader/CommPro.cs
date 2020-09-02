@@ -70,6 +70,7 @@ namespace Bootloader
         PROGRAM_REQUEST,
         PROGRAM_OK,
         PROGRAM_ERROR,
+        PROGRAM_RUN,
         READ_REQUEST,
         READ_OK,
         READ_ERROR,
