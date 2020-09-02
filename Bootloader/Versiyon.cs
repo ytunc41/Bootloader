@@ -13,11 +13,17 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.4.0";
+            getVS = "v1.4.1";
         }
 
-        /* Versiyon: 1.4.0
+        /* Versiyon: 1.4.1
+         * Tarih: 02.09.2020
          * 
+         * - Bug Fixed.
+         * - CRC32 field'i hexfile nesnesi icerisine tasinmistir.
+         */
+
+        /* Versiyon: 1.4.0
          * Tarih: 02.09.2020
          * 
          * - Program verify edildikten sonra program flasha yazilir ve arayuze PROGRAM_OK paketi gelmektedir.
@@ -32,7 +38,6 @@ namespace Bootloader
          * Tarih: 02.09.2020
          * 
          * - Cihaz bilgi paketi alirken revID ve devID bilgisi eklenmistir.
-         * - 
          */
 
         /* Versiyon: 1.3.1

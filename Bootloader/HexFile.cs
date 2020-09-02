@@ -19,6 +19,9 @@ namespace Bootloader
         private static int _addrMax;
         public int addrMax { get { _addrMax = datas.Keys.Max() + datas[datas.Keys.Max()].Count; return _addrMax; } private set { _addrMax = value; } }
 
+        private static uint _CRC32;
+        public uint CRC32 { get { return _CRC32; } set { _CRC32 = value; } }
+
         public void AddHT(int addr, List<byte> data)
         {
             datas.Add(addr, data);

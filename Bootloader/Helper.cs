@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Management;
@@ -12,6 +13,7 @@ namespace Bootloader
     public static class Helper
     {
         public static List<string> comNames = new List<string>();
+        public static Stopwatch stopWatch = new Stopwatch();
 
         public static void SerialPortDetect()
         {

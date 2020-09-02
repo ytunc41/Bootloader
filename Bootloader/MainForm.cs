@@ -40,9 +40,8 @@ namespace Bootloader
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
         private static SerialPortInput serialPort;
-        Stopwatch st = new Stopwatch();
-
-        UINT32 CRC32 = 0;
+        
+        //UINT32 CRC32 = 0;
 
         public MainForm()
         {
@@ -60,8 +59,7 @@ namespace Bootloader
         {
             if (control.InvokeRequired)
             {
-                control.Invoke(new SetControlPropertyThreadSafeDelegate
-                (SetControlPropertyThreadSafe),
+                control.Invoke(new SetControlPropertyThreadSafeDelegate (SetControlPropertyThreadSafe),
                 new object[] { control, propertyName, propertyValue });
             }
             else
@@ -172,12 +170,7 @@ namespace Bootloader
         {
             UINT8 paket_sayaci = 0;
 
-            int dataCount = 16;
-            int addrMax = fileChunk.addrMax;
-            int addrMin = fileChunk.addrMin;
-            int addr = addrMin;
-
-            Paket_Islemleri_LE.UINT32_ayir(ref SendPacket.data, ref paket_sayaci, CRC32);
+            Paket_Islemleri_LE.UINT32_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.CRC32);
 
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
@@ -381,13 +374,13 @@ namespace Bootloader
                             case (UINT8)PACKET_TYPE.PROGRAM_OK:
                                 {
                                     string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                    elps += string.Format("Memory programmed in " + st.ElapsedMilliseconds + " milliseconds.");
+                                    elps += string.Format("Memory programmed in " + Helper.stopWatch.ElapsedMilliseconds + " milliseconds.");
 
                                     elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
                                     elps += "Verification...OK";
 
                                     elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
-                                    elps += string.Format("Programmed memory Checksum: " + CRC32.ToString("X8"));
+                                    elps += string.Format("Programmed memory Checksum: " + fileChunk.CRC32.ToString("X8"));
 
 
                                     Helper.AppendText(rchtxtInfo, elps, Color.Blue);
@@ -395,7 +388,7 @@ namespace Bootloader
                                     rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
                                     rchtxtInfo.ScrollToCaret();
 
-                                    st.Stop();
+                                    Helper.stopWatch.Stop();
 
                                     break;
                                 }
@@ -408,7 +401,7 @@ namespace Bootloader
                                     rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
                                     rchtxtInfo.ScrollToCaret();
 
-                                    st.Stop();
+                                    Helper.stopWatch.Stop();
 
                                     break;
                                 }
@@ -447,42 +440,6 @@ namespace Bootloader
 
             } /*  lock (seriport_rx) */
 
-        }
-        #endregion
-
-        #region CRC16
-        public static ushort crc_calculate(byte[] pBuffer, int length)
-        {
-            if (length < 1)
-            {
-                return 0xffff;
-            }
-            // For a "message" of length bytes contained in the unsigned char array
-            // pointed to by pBuffer, calculate the CRC
-            // crcCalculate(unsigned char* pBuffer, int length, unsigned short* checkConst) < not needed
-
-            ushort crcTmp;
-            int i;
-
-            crcTmp = 0xffff;
-
-            for (i = 2; i < length; i++) // skips header
-            {
-                crcTmp = crc_accumulate(pBuffer[i], crcTmp);
-                //Console.WriteLine(crcTmp + " " + pBuffer[i] + " " + length);
-            }
-
-            return (crcTmp);
-        }
-
-        public static ushort crc_accumulate(byte b, ushort crc)
-        {
-            unchecked
-            {
-                byte ch = (byte)(b ^ (byte)(crc & 0x00ff));
-                ch = (byte)(ch ^ (ch << 4));
-                return (ushort)((crc >> 8) ^ (ch << 8) ^ (ch << 3) ^ (ch >> 4));
-            }
         }
         #endregion
 
@@ -565,7 +522,7 @@ namespace Bootloader
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            Helper.SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
+            Helper.SerialPortDetect();
             // Bu işlemler veri alimi bittikten sonra yapilacak!
 
             if (serialPort.IsConnected)
@@ -595,9 +552,8 @@ namespace Bootloader
                 Program_RUN_PaketOlustur();
                 PaketGonder(commPro);
                
-                string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                elps += string.Format("Program is executed...");
-                Helper.AppendText(rchtxtInfo, elps, Color.Purple);
+                string ex = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program is executed...");
+                Helper.AppendText(rchtxtInfo, ex, Color.Purple);
 
                 rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
                 rchtxtInfo.ScrollToCaret();
@@ -616,7 +572,6 @@ namespace Bootloader
 
                 ErasePaketOlustur();
                 PaketGonder(commPro);
-
             }
             else
             {
@@ -630,7 +585,7 @@ namespace Bootloader
             {
                 if (fileChunk.datas.Count != 0)
                 {
-                    st.Start();
+                    Helper.stopWatch.Start();
 
                     int addr = fileChunk.addrMin;
                     int count = fileChunk.datas.Keys.Count;
@@ -643,9 +598,6 @@ namespace Bootloader
 
                     Program_CRC_PaketOlustur();
                     PaketGonder(commPro);
-
-                    //btnExecute.PerformClick();
-
                 }
                 else
                 {
@@ -675,34 +627,27 @@ namespace Bootloader
                     if (!errFlag)
                     {
                         TabFileTextProcess(filePath, fileChunk);
+                        DataChunkToWriteListView(fileChunk, listViewFile);
 
                         int dataCount = 16;
                         int addrMax = fileChunk.addrMax;
                         int addrMin = fileChunk.addrMin;
                         int addr = addrMin;
 
-                        DataChunkToWriteListView(fileChunk, listViewFile);
-
-                        CRC32 = 0;
+                        fileChunk.CRC32 = 0;
 
                         for (int i = 0; addr < addrMax; i++, addr += dataCount)
                         {
                             if (fileChunk.datas.ContainsKey(addr) == false)
-                            {
                                 continue;
-                            }
 
                             for (int j = 0; j < fileChunk.datas[addr].Count; j++)
-                            {
-
-                                CRC32 += fileChunk.datas[addr][j];
-
-                            }
+                                fileChunk.CRC32 += fileChunk.datas[addr][j];
                         }
 
                         string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                         Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " opened successfully.", Color.Green);
-                        Helper.AppendText(rchtxtInfo, info + "Checksum: " + CRC32.ToString("X8"), Color.Green);    // checksum degeri girilecek!
+                        Helper.AppendText(rchtxtInfo, info + "Checksum: " + fileChunk.CRC32.ToString("X8"), Color.Green);
 
                         rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
                         rchtxtInfo.ScrollToCaret();
@@ -1149,13 +1094,7 @@ namespace Bootloader
             //TextBox t1 = (TextBox)sender;
             //t1.Text = string.Empty;
         }
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         
-
         private void MainForm_Load(object sender, EventArgs e)
         {
 
