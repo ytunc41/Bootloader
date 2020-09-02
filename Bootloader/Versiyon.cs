@@ -16,6 +16,13 @@ namespace Bootloader
             getVS = "v1.3.1";
         }
 
+        /* Versiyon: 1.3.2
+         * Tarih: 02.09.2020
+         * 
+         * - Cihaz bilgi paketi alirken revID ve devID bilgisi eklenmistir.
+         * - 
+         */
+
         /* Versiyon: 1.3.1
          * Tarih: 02.09.2020
          * 

@@ -13,10 +13,10 @@ namespace Bootloader
 
         private static uint[] _uniqueID = new uint[3];
         public uint[] uniqueID { get { return _uniqueID; } set { _uniqueID = value; } }
-        private static uint[] _devID;
-        public uint[] devID { get { return _devID; } set { _devID = value; } }
-        private static uint[] _revID;
-        public uint[] revID { get { return _revID; } set { _revID = value; } }
+        private static uint _devID;
+        public uint devID { get { return _devID; } set { _devID = value; } }
+        private static uint _revID;
+        public uint revID { get { return _revID; } set { _revID = value; } }
 
         private static int _flashSize;
         public int flashSize { get { return _flashSize; } set { _flashSize = value; } }

@@ -65,15 +65,15 @@ namespace Bootloader
 
     public enum PACKET_TYPE
     {
-        BAGLANTI_REQ = 0,
+        BAGLANTI_REQUEST = 0,
         BAGLANTI_OK,
-        PROGRAM_REQ,
+        PROGRAM_REQUEST,
         PROGRAM_OK,
         PROGRAM_ERROR,
-        READ_REQ,
+        READ_REQUEST,
         READ_OK,
         READ_ERROR,
-        ERASE_REQ,
+        ERASE_REQUEST,
         ERASE_OK,
         ERASE_ERROR
     }

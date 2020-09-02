@@ -13,6 +13,11 @@ using System.Threading.Tasks;
 using System.IO.Ports;
 using System.Windows.Forms;
 
+using SerialPortLib;
+using NLog;
+using System.Reflection;
+using System.Management;
+using System.Diagnostics;
 
 using UINT8 = System.Byte;
 using INT8 = System.SByte;
@@ -23,11 +28,6 @@ using INT32 = System.Int32;
 using UINT64 = System.UInt64;
 using FLOAT32 = System.Single;
 using FLOAT64 = System.Double;
-
-using SerialPortLib;
-using NLog;
-using System.Reflection;
-using System.Management;
 
 namespace Bootloader
 {
@@ -40,6 +40,7 @@ namespace Bootloader
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
         private static SerialPortInput serialPort;
+        Stopwatch st = new Stopwatch();
 
         public MainForm()
         {
@@ -101,22 +102,26 @@ namespace Bootloader
         private void CihazBilgisiPaketTopla()
         {
             UINT8 paket_sayaci = 0;
-
             UINT32 u_id1 = 0;
             UINT32 u_id2 = 0;
             UINT32 u_id3 = 0;
-
+            //UINT32 revID = 0;
+            //UINT32 devID = 0;
             UINT16 flashSize = 0;
 
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
+            //Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref revID);
+            //Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref devID);
             Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
 
-            deviceMemory.flashSize = flashSize;
             deviceMemory.uniqueID[0] = u_id1;
             deviceMemory.uniqueID[1] = u_id2;
             deviceMemory.uniqueID[2] = u_id3;
+            //deviceMemory.revID = revID;
+            //deviceMemory.devID = devID;
+            deviceMemory.flashSize = flashSize;
         }
         private void VeriPaketTopla()
         {
@@ -133,19 +138,19 @@ namespace Bootloader
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI_REQ;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI_REQUEST;
         }
         private void OkumaPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.READ_REQ;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.READ_REQUEST;
         }
         private void ErasePaketOlustur()
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE_REQ;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE_REQUEST;
         }
         private void VeriPaketOlustur(int addr)
         {
@@ -159,7 +164,7 @@ namespace Bootloader
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
 
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_REQ;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_REQUEST;
         }
         private void Program_CRC_PaketOlustur()
         {
@@ -168,7 +173,6 @@ namespace Bootloader
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
         }
         
-
         // PaketGonder Metodu
         private void PaketGonder(CommPro commPro)
         {
@@ -309,15 +313,21 @@ namespace Bootloader
                         {
                             case (UINT8)PACKET_TYPE.BAGLANTI_OK:
                                 {
+                                    CihazBilgisiPaketTopla();
+
                                     string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
                                     Helper.AppendText(rchtxtInfo, stm, Color.Green);
 
-                                    CihazBilgisiPaketTopla();
+                                    string dev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Device ID: " + deviceMemory.devID);
+                                    Helper.AppendText(rchtxtInfo, dev, Color.Green);
+
+                                    string rev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Revision ID: " + deviceMemory.revID);
+                                    Helper.AppendText(rchtxtInfo, rev, Color.Green);
 
                                     for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
                                     {
                                         string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                        str += string.Format("Device Unique ID{0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
+                                        str += string.Format("Device Unique ID {0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
                                         Helper.AppendText(rchtxtInfo, str, Color.Green);
                                     }
 
@@ -327,7 +337,7 @@ namespace Bootloader
 
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.READ_REQ:
+                            case (UINT8)PACKET_TYPE.READ_REQUEST:
                                 {
                                     Console.WriteLine("Veri Paketi: " + ++paketCount);
                                     VeriPaketTopla();
@@ -335,7 +345,7 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.READ_OK:
                                 {
-
+                                    
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_ERROR:
@@ -344,17 +354,21 @@ namespace Bootloader
                                     break;
                                 }
 
-                            case (UINT8)PACKET_TYPE.PROGRAM_REQ:
+                            case (UINT8)PACKET_TYPE.PROGRAM_REQUEST:
                                 {
 
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.PROGRAM_OK:
                                 {
+                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                                    elps += string.Format("Memory programmed in " + st.ElapsedMilliseconds + " milliseconds.");
+                                    Helper.AppendText(rchtxtInfo, elps, Color.Blue);
+                                    st.Stop();
 
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.ERASE_REQ:
+                            case (UINT8)PACKET_TYPE.ERASE_REQUEST:
                                 {
 
                                     break;
@@ -495,7 +509,7 @@ namespace Bootloader
             if (serialPort.IsConnected)
                 serialPort.Disconnect();
             else
-                MessageBox.Show("The device is not already connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The ST device is not already connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
@@ -524,8 +538,15 @@ namespace Bootloader
         }
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            Program_CRC_PaketOlustur();
-            PaketGonder(commPro);
+            if (serialPort.IsConnected)
+            {
+                Program_CRC_PaketOlustur();
+                PaketGonder(commPro);
+            }
+            else
+            {
+                MessageBox.Show("The ST device is not connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
         private void btnErase_Click(object sender, EventArgs e)
         {
@@ -549,6 +570,7 @@ namespace Bootloader
             {
                 if (fileChunk.datas.Count != 0)
                 {
+                    st.Start();
                     int addr = fileChunk.addrMin;
                     int count = fileChunk.datas.Keys.Count;
 
@@ -557,6 +579,9 @@ namespace Bootloader
                         VeriPaketOlustur(addr);
                         PaketGonder(commPro);
                     }
+
+                    btnExecute.PerformClick();
+
                 }
                 else
                 {
@@ -587,13 +612,13 @@ namespace Bootloader
                     {
                         TabFileTextProcess(filePath, fileChunk);
                         DataChunkToWriteListView(fileChunk, listViewFile);
-                        string info = DateTime.Now.ToString("HH:mm:ss") + " --> ";
+                        string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                         Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " opened successfully.", Color.Green);
                         Helper.AppendText(rchtxtInfo, info + "checksum: ", Color.Green);    // checksum degeri girilecek!
                     }
                     else
                     {
-                        string info = DateTime.Now.ToString("HH:mm:ss") + " --> ";
+                        string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                         Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " Hex file not open successfully.", Color.Red);
                     }
                 }
