@@ -41,7 +41,6 @@
             this.lblAddress = new System.Windows.Forms.Label();
             this.tooltipInfo = new System.Windows.Forms.ToolTip(this.components);
             this.btnOpen = new System.Windows.Forms.Button();
-            this.btnSave = new System.Windows.Forms.Button();
             this.btnErase = new System.Windows.Forms.Button();
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
@@ -59,6 +58,7 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.rchtxtInfo = new System.Windows.Forms.RichTextBox();
+            this.btnExecute = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -82,6 +82,7 @@
             this.imgButtons.Images.SetKeyName(7, "eraser_icon.png");
             this.imgButtons.Images.SetKeyName(8, "usb_conn2.png");
             this.imgButtons.Images.SetKeyName(9, "usb_disconn2.png");
+            this.imgButtons.Images.SetKeyName(10, "start-32.png");
             // 
             // imgRefresh
             // 
@@ -181,18 +182,6 @@
             this.btnOpen.UseVisualStyleBackColor = true;
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
-            // btnSave
-            // 
-            this.btnSave.ImageKey = "save_icon.png";
-            this.btnSave.ImageList = this.imgButtons;
-            this.btnSave.Location = new System.Drawing.Point(240, 12);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(44, 44);
-            this.btnSave.TabIndex = 6;
-            this.tooltipInfo.SetToolTip(this.btnSave, "Save file.");
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
-            // 
             // btnErase
             // 
             this.btnErase.ImageKey = "eraser_icon.png";
@@ -245,7 +234,7 @@
             // 
             this.btnVerify.ImageKey = "verify_icon2.png";
             this.btnVerify.ImageList = this.imgButtons;
-            this.btnVerify.Location = new System.Drawing.Point(290, 12);
+            this.btnVerify.Location = new System.Drawing.Point(240, 12);
             this.btnVerify.Name = "btnVerify";
             this.btnVerify.Size = new System.Drawing.Size(44, 44);
             this.btnVerify.TabIndex = 14;
@@ -398,16 +387,28 @@
             this.rchtxtInfo.TabIndex = 17;
             this.rchtxtInfo.Text = "";
             // 
+            // btnExecute
+            // 
+            this.btnExecute.ImageKey = "start-32.png";
+            this.btnExecute.ImageList = this.imgButtons;
+            this.btnExecute.Location = new System.Drawing.Point(290, 12);
+            this.btnExecute.Name = "btnExecute";
+            this.btnExecute.Size = new System.Drawing.Size(44, 44);
+            this.btnExecute.TabIndex = 15;
+            this.tooltipInfo.SetToolTip(this.btnExecute, "Execute the program.");
+            this.btnExecute.UseVisualStyleBackColor = true;
+            this.btnExecute.Click += new System.EventHandler(this.btnExecute_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(874, 590);
+            this.Controls.Add(this.btnExecute);
             this.Controls.Add(this.btnVerify);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnOpen);
-            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnErase);
             this.Controls.Add(this.btnDisconnect);
             this.Controls.Add(this.btnRefresh);
@@ -442,7 +443,6 @@
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.Button btnErase;
-        private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnOpen;
         private System.Windows.Forms.ImageList imgRefresh;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -466,6 +466,7 @@
         private System.Windows.Forms.ListView listViewDevice;
         private System.Windows.Forms.Label lblDeviceMemory;
         private System.Windows.Forms.RichTextBox rchtxtInfo;
+        private System.Windows.Forms.Button btnExecute;
     }
 }
 

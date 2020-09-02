@@ -39,9 +39,7 @@ namespace Bootloader
         HexFile fileChunk = new HexFile();
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
-        List<string> comNames = new List<string>();
         private static SerialPortInput serialPort;
-        DateTime dt = new DateTime();
 
         public MainForm()
         {
@@ -51,31 +49,9 @@ namespace Bootloader
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
-            SerialPortDetect();
+            Helper.SerialPortDetect();
         }
-        private void SerialPortDetect()
-        {
-            comNames.Clear();
-            try
-            {
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PnPEntity");
-                foreach (ManagementObject queryObj in searcher.Get())
-                {
-                    if (queryObj["Caption"] != null)
-                    {
-                        if (queryObj["Caption"].ToString().Contains("(COM"))
-                        {
-                            comNames.Add(queryObj["Name"].ToString());
-                        }
-                    }
-                }
-            }
-            catch (ManagementException)
-            {
-                MessageBox.Show("Unknown Error");
-            }
-        }
-
+        
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
         {
@@ -122,7 +98,6 @@ namespace Bootloader
         }
 
         // PaketTopla Metotlari
-
         private void CihazBilgisiPaketTopla()
         {
             UINT8 paket_sayaci = 0;
@@ -192,7 +167,7 @@ namespace Bootloader
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
         }
-      
+        
 
         // PaketGonder Metodu
         private void PaketGonder(CommPro commPro)
@@ -346,7 +321,6 @@ namespace Bootloader
                                         Helper.AppendText(rchtxtInfo, str, Color.Green);
                                     }
 
-
                                     string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                     strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
                                     Helper.AppendText(rchtxtInfo, strf, Color.Purple);
@@ -446,7 +420,6 @@ namespace Bootloader
         }
         #endregion
 
-
         // SeriPortForm Eventlari
         private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -468,6 +441,7 @@ namespace Bootloader
         // Buton Click Eventlari
         private void btnConnect_Click(object sender, EventArgs e)
         {
+            List<string> comNames = Helper.comNames;
             string device = string.Empty;
 
             if (!serialPort.IsConnected)
@@ -488,9 +462,6 @@ namespace Bootloader
                         string comVal = device.Substring(device.IndexOf("(COM") + 1, device.IndexOf(")") - (device.IndexOf("(COM") + 1));
                         serialPort.SetPort(comVal, 115200);
                         serialPort.Connect();
-
-
-
                     }
                     else
                     {
@@ -528,7 +499,7 @@ namespace Bootloader
         }
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
+            Helper.SerialPortDetect();       // buradaki eventta sadece bu metot olacak!
             // Bu işlemler veri alimi bittikten sonra yapilacak!
 
             if (serialPort.IsConnected)
@@ -550,6 +521,11 @@ namespace Bootloader
             {
 
             }
+        }
+        private void btnExecute_Click(object sender, EventArgs e)
+        {
+            Program_CRC_PaketOlustur();
+            PaketGonder(commPro);
         }
         private void btnErase_Click(object sender, EventArgs e)
         {
@@ -581,14 +557,11 @@ namespace Bootloader
                         VeriPaketOlustur(addr);
                         PaketGonder(commPro);
                     }
-
-                    Program_CRC_PaketOlustur();
-                    PaketGonder(commPro);
-
                 }
                 else
                 {
-                    MessageBox.Show("First of all, upload hex file.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    btnOpen.PerformClick();
+                    btnVerify.PerformClick();
                 }
             }
             else
@@ -1065,6 +1038,8 @@ namespace Bootloader
             
         }
 
+        
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -1076,9 +1051,7 @@ namespace Bootloader
             {
                 serialPort.Disconnect();
             }
-
             serialPort.Disconnect();
-
         }
 
         

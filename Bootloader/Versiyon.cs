@@ -13,8 +13,18 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.3.0";
+            getVS = "v1.3.1";
         }
+
+        /* Versiyon: 1.3.1
+         * Tarih: 02.09.2020
+         * 
+         * - Device nesnesine revID ve devID property'leri eklenmistir.
+         * - SerialPortDetect() metodu Helper nesnesi icerisine eklenmistir.
+         * - ST cihaza program atmak icin atilmak istenen program daha once acilmamissa,
+         *   butona bastiktan sonra ilk olarak hex dosyasini acip ardindan cihaza yollama ozelligi uygulanmistir.
+         * - Program yuklendikten sonra programi calistirmak icin Execute butonu eklenmistir.
+         */
 
         /* Versiyon: 1.3.0
          * Tarih: 02.09.2020
