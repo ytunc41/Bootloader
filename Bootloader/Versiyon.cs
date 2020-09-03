@@ -13,13 +13,23 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.4.1";
+            getVS = "v1.4.2";
         }
+
+        /* Versiyon: 1.4.2
+         * Tarih: 03.09.2020
+         * 
+         * - RichTextBox yazdirma islemleri icin invoke metotlari kullanilmistir ve bu sebeple thread cakismasi engellenmistir.
+         * - revID ve devID bilgisi kaldirilmistir.
+         * - Arayuzun daha kararli calismasi icin duzenlemeler yapilmistir.
+         * - Thread'lerin cakismasi onlenmistir.
+         * - PAKET_FLAG nesnesi commPro nesnesi icerisine eklenmistir.
+         */
 
         /* Versiyon: 1.4.1
          * Tarih: 02.09.2020
          * 
-         * - Bug Fixed.
+         * - Duzenlemeler yapilmistir.
          * - CRC32 field'i hexfile nesnesi icerisine tasinmistir.
          */
 
@@ -32,7 +42,6 @@ namespace Bootloader
          * - Checksum dogru ise PROGRAM_OK paketi geri gonderilmis ve kullanici bilgilendirilmistir.
          * - Info textbox icin eklemeler yapilmistir.
          */
-
 
         /* Versiyon: 1.3.2
          * Tarih: 02.09.2020

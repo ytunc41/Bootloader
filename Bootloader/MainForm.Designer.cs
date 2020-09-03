@@ -395,8 +395,7 @@
             this.rchtxtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rchtxtInfo.Location = new System.Drawing.Point(3, 355);
             this.rchtxtInfo.Name = "rchtxtInfo";
-            this.rchtxtInfo.ReadOnly = true;
-            this.rchtxtInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Horizontal;
+            this.rchtxtInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.rchtxtInfo.Size = new System.Drawing.Size(845, 130);
             this.rchtxtInfo.TabIndex = 17;
             this.rchtxtInfo.Text = "";

@@ -20,11 +20,28 @@ namespace Bootloader
     {
         public PACKET_STATUS    packet_status;
         public PACKET_TYPE      packet_type;
-
+        
         public List<UINT8> txBuffer = new List<UINT8>();
         public List<UINT8> rxBuffer = new List<UINT8>();
 
         public bool PAKET_HAZIR_FLAG = false;
+        public PACKET_TYPE_FLAG PACKET_TYPE_FLAG = new PACKET_TYPE_FLAG();
+    }
+
+    public class PACKET_TYPE_FLAG
+    {
+        public bool BAGLANTI_OK = false;
+        public bool PROGRAM_OK = false;
+        public bool READ_OK = false;
+        public bool ERASE_OK = false;
+
+        public void ClearAll()
+        {
+            this.BAGLANTI_OK = false;
+            this.PROGRAM_OK = false;
+            this.READ_OK = false;
+            this.ERASE_OK = false;
+        }
     }
 
     public static class SendPacket

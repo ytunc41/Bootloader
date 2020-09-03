@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bootloader
 {
-    public class Device : DataChunk
+    public sealed class Device : DataChunk
     {
         private static Dictionary<int, List<byte>> _device = new Dictionary<int, List<byte>>();
         public Dictionary<int, List<byte>> datas { get { return _device; } private set { _device = value; } }
@@ -44,7 +44,6 @@ namespace Bootloader
             this.startAddr = 0;
             this.addrMax = 0;
             this.addrMin = 0;
-            this.totalPacket = 0;
         }
 
     }

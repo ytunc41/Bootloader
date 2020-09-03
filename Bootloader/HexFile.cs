@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bootloader
 {
-    public class HexFile : DataChunk
+    public sealed class HexFile : DataChunk
     {
         private static Dictionary<int, List<byte>> _file = new Dictionary<int, List<byte>>();
         public Dictionary<int, List<byte>> datas { get { return _file; } private set { _file = value; } }

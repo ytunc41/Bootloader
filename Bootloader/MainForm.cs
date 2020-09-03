@@ -40,14 +40,12 @@ namespace Bootloader
         Device deviceMemory = new Device();
         CommPro commPro = new CommPro();
         private static SerialPortInput serialPort;
-        
-        //UINT32 CRC32 = 0;
 
         public MainForm()
         {
             InitializeComponent();
             this.Text += " - " + Versiyon.getVS;
-            CheckForIllegalCrossThreadCalls = false;
+            //CheckForIllegalCrossThreadCalls = false;
             serialPort = new SerialPortInput();
             serialPort.ConnectionStatusChanged += SerialPort_ConnectionStatusChanged;
             serialPort.MessageReceived += SerialPort_MessageReceived;
@@ -105,22 +103,16 @@ namespace Bootloader
             UINT32 u_id1 = 0;
             UINT32 u_id2 = 0;
             UINT32 u_id3 = 0;
-            //UINT32 revID = 0;
-            //UINT32 devID = 0;
             UINT16 flashSize = 0;
 
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
             Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
-            //Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref revID);
-            //Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref devID);
             Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
 
             deviceMemory.uniqueID[0] = u_id1;
             deviceMemory.uniqueID[1] = u_id2;
             deviceMemory.uniqueID[2] = u_id3;
-            //deviceMemory.revID = revID;
-            //deviceMemory.devID = devID;
             deviceMemory.flashSize = flashSize;
         }
         private void VeriPaketTopla()
@@ -131,6 +123,40 @@ namespace Bootloader
                 data.Add(ReceivedPacket.data[i]);
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
+        }
+        
+        private void DeviceMemoryWriteProcess()
+        {
+            if (serialPort.IsConnected)
+            {
+                if (commPro.PACKET_TYPE_FLAG.READ_OK)
+                {
+                    if (paketCount == deviceMemory.totalPacket && sofErr == 0 && crcErr == 0)
+                    {
+                        tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
+                        listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
+
+                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "ST device memory collected successfully.");
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
+                    }
+                    else
+                    {
+                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
+                        //Thread.Sleep(100);
+                        deviceMemory.ClearAll();
+                        paketCount = 0; sofErr = 0; crcErr = 0;
+                        OkumaPaketOlustur();
+                        PaketGonder(commPro);
+                    }
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
+                }
+            }
+            else
+            {
+                MessageBox.Show("No ST Device Detected!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // PaketOlustur Metotlari
@@ -155,10 +181,7 @@ namespace Bootloader
         private void VeriPaketOlustur(int addr)
         {
             UINT8 paket_sayaci = 0;
-
             int dataCount = fileChunk.datas[addr].Count;
-
-            //Paket_Islemleri_LE.INT32_ayir(ref SendPacket.data, ref paket_sayaci, addr);
 
             for (int i = 0; i < dataCount; i++)
                 Paket_Islemleri_LE.UINT8_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.datas[addr][i]);
@@ -166,7 +189,7 @@ namespace Bootloader
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_REQUEST;
         }
-        private void Program_CRC_PaketOlustur()
+        private void CRCPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
 
@@ -175,8 +198,7 @@ namespace Bootloader
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
         }
-
-        private void Program_RUN_PaketOlustur()
+        private void RUNPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
 
@@ -215,11 +237,12 @@ namespace Bootloader
             {
                 foreach (UINT8 byte_u8 in data)
                 {
+                    #region switch (commPro.packet_status)
                     switch (commPro.packet_status)
                     {
                         case PACKET_STATUS.SOF1:
                             {
-                                if( byte_u8 == (UINT8)CHECK_STATUS.SOF1 )
+                                if (byte_u8 == (UINT8)CHECK_STATUS.SOF1)
                                 {
                                     ReceivedPacket.sof1 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.SOF2;
@@ -233,7 +256,7 @@ namespace Bootloader
                             }
                         case PACKET_STATUS.SOF2:
                             {
-                                if ( byte_u8 == (UINT8)CHECK_STATUS.SOF2 )
+                                if (byte_u8 == (UINT8)CHECK_STATUS.SOF2)
                                 {
                                     ReceivedPacket.sof2 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.PACKET_TYPE;
@@ -261,7 +284,7 @@ namespace Bootloader
                             {
                                 ReceivedPacket.dataSize = byte_u8;
 
-                                if( ReceivedPacket.dataSize == 0 )
+                                if (ReceivedPacket.dataSize == 0)
                                 {
                                     commPro.packet_status = PACKET_STATUS.CRC1;
                                     break;
@@ -273,7 +296,7 @@ namespace Bootloader
                             {
                                 ReceivedPacket.data[VERI_BOYUTU++] = byte_u8;
 
-                                if( VERI_BOYUTU == ReceivedPacket.dataSize )
+                                if (VERI_BOYUTU == ReceivedPacket.dataSize)
                                 {
                                     commPro.packet_status = PACKET_STATUS.CRC1;
                                     VERI_BOYUTU = 0;
@@ -282,7 +305,7 @@ namespace Bootloader
                             }
                         case PACKET_STATUS.CRC1:
                             {
-                                if ( byte_u8 == (UINT8)CHECK_STATUS.CRC1 )
+                                if (byte_u8 == (UINT8)CHECK_STATUS.CRC1)
                                 {
                                     ReceivedPacket.crc1 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.CRC2;
@@ -296,7 +319,7 @@ namespace Bootloader
                             }
                         case PACKET_STATUS.CRC2:
                             {
-                                if ( byte_u8 == (UINT8)CHECK_STATUS.CRC2 )
+                                if (byte_u8 == (UINT8)CHECK_STATUS.CRC2)
                                 {
                                     ReceivedPacket.crc2 = byte_u8;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
@@ -316,10 +339,19 @@ namespace Bootloader
                             }
 
                     } /* switch (commPro.packet_status) */
+                    #endregion
 
-
-                    if(commPro.PAKET_HAZIR_FLAG)
+                    #region if (commPro.PAKET_HAZIR_FLAG)
+                    if (commPro.PAKET_HAZIR_FLAG)
                     {
+                        commPro.PACKET_TYPE_FLAG.ClearAll();
+
+                        Action actScroll = () =>
+                        {
+                            rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                            rchtxtInfo.ScrollToCaret();
+                        };
+
                         switch (ReceivedPacket.packetType)
                         {
                             case (UINT8)PACKET_TYPE.BAGLANTI_OK:
@@ -327,26 +359,21 @@ namespace Bootloader
                                     CihazBilgisiPaketTopla();
 
                                     string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
-                                    Helper.AppendText(rchtxtInfo, stm, Color.Green);
-
-                                    //string dev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Device ID: " + deviceMemory.devID);
-                                    //Helper.AppendText(rchtxtInfo, dev, Color.Green);
-
-                                    //string rev = DateTime.Now.ToString("HH:mm:ss") + " --> " + string.Format("Revision ID: " + deviceMemory.revID);
-                                    //Helper.AppendText(rchtxtInfo, rev, Color.Green);
+                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, stm, Color.Green)));
 
                                     for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
                                     {
                                         string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                         str += string.Format("Device Unique ID {0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
-                                        Helper.AppendText(rchtxtInfo, str, Color.Green);
+                                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
                                     }
 
                                     string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                     strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
-                                    Helper.AppendText(rchtxtInfo, strf, Color.Purple);
+                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, strf, Color.Purple)));
+                                    rchtxtInfo.Invoke(actScroll);
 
-
+                                    commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = true;
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_REQUEST:
@@ -357,7 +384,10 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.READ_OK:
                                 {
-                                    
+                                    commPro.PACKET_TYPE_FLAG.READ_OK = true;
+
+                                    DeviceMemoryWriteProcess();
+
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_ERROR:
@@ -377,29 +407,30 @@ namespace Bootloader
                                     elps += string.Format("Memory programmed in " + Helper.stopWatch.ElapsedMilliseconds + " milliseconds.");
 
                                     elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
-                                    elps += "Verification...OK";
+                                    elps += "Verification OK!";
 
                                     elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
-                                    elps += string.Format("Programmed memory Checksum: " + fileChunk.CRC32.ToString("X8"));
+                                    elps += string.Format("Programmed memory Checksum: 0x" + fileChunk.CRC32.ToString("X8"));
 
-
-                                    Helper.AppendText(rchtxtInfo, elps, Color.Blue);
-
-                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                                    rchtxtInfo.ScrollToCaret();
+                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
+                                    rchtxtInfo.Invoke(actScroll);
 
                                     Helper.stopWatch.Stop();
 
+                                    deviceMemory.ClearAll();
+                                    paketCount = 0;
+                                    OkumaPaketOlustur();
+                                    PaketGonder(commPro);
+
+                                    commPro.PACKET_TYPE_FLAG.PROGRAM_OK = true;
                                     break;
                                 }
 
                             case (UINT8)PACKET_TYPE.PROGRAM_ERROR:
                                 {
-                                    string str = "Checksum Error !";
-                                    Helper.AppendText(rchtxtInfo, str, Color.Red);
-
-                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                                    rchtxtInfo.ScrollToCaret();
+                                    string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum Error!");
+                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
+                                    rchtxtInfo.Invoke(actScroll);
 
                                     Helper.stopWatch.Stop();
 
@@ -412,15 +443,16 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_OK:
                                 {
+                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program memory erased.");
+                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
+                                    rchtxtInfo.Invoke(actScroll);
 
-                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                    elps += string.Format("Program memory erased.");
+                                    deviceMemory.ClearAll();
+                                    paketCount = 0;
+                                    OkumaPaketOlustur();
+                                    PaketGonder(commPro);
 
-                                    Helper.AppendText(rchtxtInfo, elps, Color.Blue);
-
-                                    rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                                    rchtxtInfo.ScrollToCaret();
-
+                                    commPro.PACKET_TYPE_FLAG.ERASE_OK = true;
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_ERROR:
@@ -435,6 +467,7 @@ namespace Bootloader
 
                         commPro.PAKET_HAZIR_FLAG = false;
                     } /* if(commPro.PAKET_HAZIR_FLAG) */
+                    #endregion
 
                 } /* foreach (UINT8 byte_u8 in data) */
 
@@ -523,33 +556,12 @@ namespace Bootloader
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             Helper.SerialPortDetect();
-            // Bu işlemler veri alimi bittikten sonra yapilacak!
-
-            if (serialPort.IsConnected)
-            {
-                if (deviceMemory.datas.Count != 0)
-                {
-                    if (paketCount == deviceMemory.totalPacket && sofErr == 0 && crcErr == 0)
-                    {
-                        tabControl1.SelectedTab = tabDeviceMemory;
-                        DataChunkToWriteListView(deviceMemory, listViewDevice);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Checksum error found while receiving data!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            else
-            {
-
-            }
         }
         private void btnExecute_Click(object sender, EventArgs e)
         {
             if (serialPort.IsConnected)
             {
-                Program_RUN_PaketOlustur();
+                RUNPaketOlustur();
                 PaketGonder(commPro);
                
                 string ex = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program is executed...");
@@ -585,7 +597,7 @@ namespace Bootloader
             {
                 if (fileChunk.datas.Count != 0)
                 {
-                    Helper.stopWatch.Start();
+                    Helper.stopWatch.Restart();
 
                     int addr = fileChunk.addrMin;
                     int count = fileChunk.datas.Keys.Count;
@@ -595,8 +607,7 @@ namespace Bootloader
                         VeriPaketOlustur(addr);
                         PaketGonder(commPro);
                     }
-
-                    Program_CRC_PaketOlustur();
+                    CRCPaketOlustur();
                     PaketGonder(commPro);
                 }
                 else
@@ -645,18 +656,18 @@ namespace Bootloader
                                 fileChunk.CRC32 += fileChunk.datas[addr][j];
                         }
 
-                        string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                        Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " opened successfully.", Color.Green);
-                        Helper.AppendText(rchtxtInfo, info + "Checksum: " + fileChunk.CRC32.ToString("X8"), Color.Green);
-
-                        rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                        rchtxtInfo.ScrollToCaret();
+                        string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + fileChunk.fileText + " opened successfully.\n");
+                        info += string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum: 0x" + fileChunk.CRC32.ToString("X8"));
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, info, Color.Green)));
+                        
                     }
                     else
                     {
                         string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                        Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " Hex file not open successfully.", Color.Red);
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " Hex file not open successfully.", Color.Red)));
                     }
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
                 }
             }
         }
@@ -765,7 +776,6 @@ namespace Bootloader
         private void DataChunkToWriteListView(Device dataChunk, ListView listView)
         {
             listView.BeginUpdate();
-
             listView.Clear();
 
             #region Adding column headers according to bits. (8,16,32 bits)
@@ -797,6 +807,7 @@ namespace Bootloader
             int addrMax = dataChunk.addrMax;
             int addrMin = dataChunk.addrMin;
             int addr = addrMin;
+            addr = 0x8008000;   // programin baslangic adresi
             ListViewItem lst;
             List<string> listString;
 
