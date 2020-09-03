@@ -25,7 +25,7 @@ namespace Bootloader
         private static int _sectorPacketVal;
         public int sectorPacketVal { get { _sectorPacketVal = sectorValue / 16; return _sectorPacketVal; } private set { _sectorPacketVal = value; } }
         private static int _totalPacket;
-        public int totalPacket { get { _totalPacket = sectorPacketVal * flashSize; return _totalPacket; } private set { _totalPacket = value; } }
+        public int totalPacket { get { _totalPacket = sectorPacketVal * flashSize / 2; return _totalPacket; } private set { _totalPacket = value; } }
 
         private static int _addrMin;
         public int addrMin { get { _addrMin = this.datas.Keys.Min(); return _addrMin; } private set { _addrMin = value; } }

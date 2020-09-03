@@ -79,6 +79,8 @@ namespace Bootloader
         {
             deviceMemory.ClearAll();
             listViewDevice.Clear();
+
+            rchtxtInfo.Invoke(new Action(() => rchtxtInfo.Text = string.Empty));
             rchtxtInfo.Text = string.Empty;
 
             if (args.Connected)
@@ -805,7 +807,7 @@ namespace Bootloader
             int addrMax = dataChunk.addrMax;
             int addrMin = dataChunk.addrMin;
             int addr = addrMin;
-            addr = 0x8008000;   // programin baslangic adresi
+   
             ListViewItem lst;
             List<string> listString;
 

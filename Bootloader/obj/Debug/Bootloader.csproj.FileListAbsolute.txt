@@ -47,4 +47,3 @@ C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\bin\Debug\Eco.WPF.dll
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\bin\Debug\WECPOFLogic.dll
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\bin\Debug\WPFViewModelExternalControls.dll
 C:\Users\yusuf\Documents\GitHub\Bootloader\Bootloader\bin\Debug\System.Buffers.dll
-C:\C# Workspace\USB_Bootloader_C#\Bootloader\Bootloader\obj\Debug\Bootloader.csprojAssemblyReference.cache

@@ -13,8 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.4.4";
+            getVS = "v1.5.0";
         }
+
+        /* Versiyon: 1.5.0.
+         * Tarih: 04.09.2020
+         * 
+         * - PROGRAM hafızasi 32kB oldugundan gomulu tarafindan gelen flashSize degiskeni 2'ye bolunerek adresin 0x8008000'den baslaması saglanmistir.
+         * - Baglantı degisimi eventHandler içerisinde rchTxtInfo için Invoke methodu kullanılmıstır.
+         *
+         */
 
         /* Versiyon: 1.4.4
          * Tarih: 04.09.2020
