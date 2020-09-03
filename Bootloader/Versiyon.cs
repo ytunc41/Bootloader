@@ -13,11 +13,17 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.4.2";
+            getVS = "v1.4.3";
         }
 
+        /* Versiyon: 1.4.3
+         * Tarih: 04.09.2020
+         * 
+         * - Hata duzeltmeleri yapildi.
+         */
+
         /* Versiyon: 1.4.2
-         * Tarih: 03.09.2020
+         * Tarih: 04.09.2020
          * 
          * - RichTextBox yazdirma islemleri icin invoke metotlari kullanilmistir ve bu sebeple thread cakismasi engellenmistir.
          * - revID ve devID bilgisi kaldirilmistir.

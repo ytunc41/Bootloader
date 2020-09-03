@@ -418,7 +418,7 @@ namespace Bootloader
                                     Helper.stopWatch.Stop();
 
                                     deviceMemory.ClearAll();
-                                    paketCount = 0;
+                                    paketCount = 0; sofErr = 0; crcErr = 0;
                                     OkumaPaketOlustur();
                                     PaketGonder(commPro);
 
@@ -448,7 +448,7 @@ namespace Bootloader
                                     rchtxtInfo.Invoke(actScroll);
 
                                     deviceMemory.ClearAll();
-                                    paketCount = 0;
+                                    paketCount = 0; sofErr = 0; crcErr = 0;
                                     OkumaPaketOlustur();
                                     PaketGonder(commPro);
 
@@ -580,7 +580,7 @@ namespace Bootloader
             if (serialPort.IsConnected)
             {
                 deviceMemory.ClearAll();
-                paketCount = 0;
+                paketCount = 0; sofErr = 0; crcErr = 0;
 
                 ErasePaketOlustur();
                 PaketGonder(commPro);
@@ -684,7 +684,6 @@ namespace Bootloader
         private void DataChunkToWriteListView(HexFile dataChunk, ListView listView)
         {
             listView.BeginUpdate();
-
             listView.Clear();
 
             #region Adding column headers according to bits. (8,16,32 bits)
