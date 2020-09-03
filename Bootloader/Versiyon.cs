@@ -13,8 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.4.3";
+            getVS = "v1.4.4";
         }
+
+        /* Versiyon: 1.4.4
+         * Tarih: 04.09.2020
+         * 
+         * - Hata duzeltmeleri yapilmistir.
+         * - SerialPortLib.dll kutuphanesinde degisiklikler yapildi.
+         * - PaketGonder(commPro) metotlari PaketOlustur metotlari icerisine tasinmistir.
+         */
 
         /* Versiyon: 1.4.3
          * Tarih: 04.09.2020

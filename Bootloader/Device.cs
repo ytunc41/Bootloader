@@ -32,6 +32,8 @@ namespace Bootloader
         private static int _addrMax;
         public int addrMax { get { _addrMax = datas.Keys.Max() + datas[datas.Keys.Max()].Count; return _addrMax; } private set { _addrMax = value; } }
 
+        public int paketCount, sofErr, crcErr;
+
         public void AddHT(int addr, List<byte> data)
         {
             datas.Add(addr, data);
@@ -44,6 +46,9 @@ namespace Bootloader
             this.startAddr = 0;
             this.addrMax = 0;
             this.addrMin = 0;
+            this.paketCount = 0;
+            this.sofErr = 0;
+            this.crcErr = 0;
         }
 
     }

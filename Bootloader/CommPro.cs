@@ -28,22 +28,6 @@ namespace Bootloader
         public PACKET_TYPE_FLAG PACKET_TYPE_FLAG = new PACKET_TYPE_FLAG();
     }
 
-    public class PACKET_TYPE_FLAG
-    {
-        public bool BAGLANTI_OK = false;
-        public bool PROGRAM_OK = false;
-        public bool READ_OK = false;
-        public bool ERASE_OK = false;
-
-        public void ClearAll()
-        {
-            this.BAGLANTI_OK = false;
-            this.PROGRAM_OK = false;
-            this.READ_OK = false;
-            this.ERASE_OK = false;
-        }
-    }
-
     public static class SendPacket
     {
         public static UINT8 sof1 = 58;
@@ -80,6 +64,14 @@ namespace Bootloader
         CRC2 = 7
     }
 
+    public enum CHECK_STATUS
+    {
+        SOF1 = 58,
+        SOF2 = 34,
+        CRC1 = 41,
+        CRC2 = 69
+    }
+
     public enum PACKET_TYPE
     {
         BAGLANTI_REQUEST = 0,
@@ -96,13 +88,23 @@ namespace Bootloader
         ERASE_ERROR
     }
 
-    public enum CHECK_STATUS
+    public class PACKET_TYPE_FLAG
     {
-        SOF1 = 58,
-        SOF2 = 34,
-        CRC1 = 41,
-        CRC2 = 69
+        public bool BAGLANTI_OK = false;
+        public bool PROGRAM_OK = false;
+        public bool READ_OK = false;
+        public bool ERASE_OK = false;
+
+        public void ClearAll()
+        {
+            this.BAGLANTI_OK = false;
+            this.PROGRAM_OK = false;
+            this.READ_OK = false;
+            this.ERASE_OK = false;
+        }
     }
+
+    
 
 
 

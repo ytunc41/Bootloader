@@ -79,16 +79,13 @@ namespace Bootloader
         {
             deviceMemory.ClearAll();
             listViewDevice.Clear();
-            paketCount = 0; sofErr = 0; crcErr = 0;
             rchtxtInfo.Text = string.Empty;
 
             if (args.Connected)
             {
                 BaglantiPaketOlustur();
-                PaketGonder(commPro);
 
                 OkumaPaketOlustur();
-                PaketGonder(commPro);
 
                 lblStatus.Text = "Status: Connected!";
             }
@@ -122,7 +119,7 @@ namespace Bootloader
             for (int i = 4; i < ReceivedPacket.dataSize; i++)
                 data.Add(ReceivedPacket.data[i]);
             deviceMemory.AddHT(addr, data);
-            Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", paketCount, sofErr, crcErr);
+            Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", deviceMemory.paketCount, deviceMemory.sofErr, deviceMemory.crcErr);
         }
         
         private void DeviceMemoryWriteProcess()
@@ -131,7 +128,7 @@ namespace Bootloader
             {
                 if (commPro.PACKET_TYPE_FLAG.READ_OK)
                 {
-                    if (paketCount == deviceMemory.totalPacket && sofErr == 0 && crcErr == 0)
+                    if (deviceMemory.paketCount == deviceMemory.totalPacket && deviceMemory.sofErr == 0 && deviceMemory.crcErr == 0)
                     {
                         tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
                         listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
@@ -145,9 +142,7 @@ namespace Bootloader
                         rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
                         //Thread.Sleep(100);
                         deviceMemory.ClearAll();
-                        paketCount = 0; sofErr = 0; crcErr = 0;
                         OkumaPaketOlustur();
-                        PaketGonder(commPro);
                     }
                     rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
                     rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
@@ -165,18 +160,24 @@ namespace Bootloader
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.BAGLANTI_REQUEST;
+
+            PaketGonder(commPro);
         }
         private void OkumaPaketOlustur()
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.READ_REQUEST;
+
+            PaketGonder(commPro);
         }
         private void ErasePaketOlustur()
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.ERASE_REQUEST;
+
+            PaketGonder(commPro);
         }
         private void VeriPaketOlustur(int addr)
         {
@@ -188,6 +189,8 @@ namespace Bootloader
 
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_REQUEST;
+
+            PaketGonder(commPro);
         }
         private void CRCPaketOlustur()
         {
@@ -197,6 +200,8 @@ namespace Bootloader
 
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
+
+            PaketGonder(commPro);
         }
         private void RUNPaketOlustur()
         {
@@ -204,6 +209,8 @@ namespace Bootloader
 
             SendPacket.dataSize = paket_sayaci;
             SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_RUN;
+
+            PaketGonder(commPro);
         }
         
         // PaketGonder Metodu
@@ -229,7 +236,6 @@ namespace Bootloader
         }
 
         // PaketCoz Metodu
-        public UINT32 paketCount, sofErr, crcErr;
         private void PaketCoz(UINT8[] data)
         {
             UINT8 VERI_BOYUTU = 0;
@@ -249,7 +255,7 @@ namespace Bootloader
                                 }
                                 else
                                 {
-                                    sofErr++;
+                                    deviceMemory.sofErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -263,7 +269,7 @@ namespace Bootloader
                                 }
                                 else
                                 {
-                                    sofErr++;
+                                    deviceMemory.sofErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -312,7 +318,7 @@ namespace Bootloader
                                 }
                                 else
                                 {
-                                    crcErr++;
+                                    deviceMemory.crcErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -328,7 +334,7 @@ namespace Bootloader
                                 }
                                 else
                                 {
-                                    crcErr++;
+                                    deviceMemory.crcErr++;
                                     commPro.packet_status = PACKET_STATUS.SOF1;
                                 }
                                 break;
@@ -356,6 +362,8 @@ namespace Bootloader
                         {
                             case (UINT8)PACKET_TYPE.BAGLANTI_OK:
                                 {
+                                    commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = true;
+
                                     CihazBilgisiPaketTopla();
 
                                     string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
@@ -373,12 +381,11 @@ namespace Bootloader
                                     rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, strf, Color.Purple)));
                                     rchtxtInfo.Invoke(actScroll);
 
-                                    commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = true;
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_REQUEST:
                                 {
-                                    Console.WriteLine("Veri Paketi: " + ++paketCount);
+                                    Console.WriteLine("Veri Paketi: " + ++deviceMemory.paketCount);
                                     VeriPaketTopla();
                                     break;
                                 }
@@ -403,6 +410,8 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.PROGRAM_OK:
                                 {
+                                    commPro.PACKET_TYPE_FLAG.PROGRAM_OK = true;
+
                                     string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                                     elps += string.Format("Memory programmed in " + Helper.stopWatch.ElapsedMilliseconds + " milliseconds.");
 
@@ -418,11 +427,8 @@ namespace Bootloader
                                     Helper.stopWatch.Stop();
 
                                     deviceMemory.ClearAll();
-                                    paketCount = 0; sofErr = 0; crcErr = 0;
                                     OkumaPaketOlustur();
-                                    PaketGonder(commPro);
 
-                                    commPro.PACKET_TYPE_FLAG.PROGRAM_OK = true;
                                     break;
                                 }
 
@@ -443,16 +449,15 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_OK:
                                 {
+                                    commPro.PACKET_TYPE_FLAG.ERASE_OK = true;
+
                                     string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program memory erased.");
                                     rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
                                     rchtxtInfo.Invoke(actScroll);
 
                                     deviceMemory.ClearAll();
-                                    paketCount = 0; sofErr = 0; crcErr = 0;
                                     OkumaPaketOlustur();
-                                    PaketGonder(commPro);
 
-                                    commPro.PACKET_TYPE_FLAG.ERASE_OK = true;
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_ERROR:
@@ -562,13 +567,11 @@ namespace Bootloader
             if (serialPort.IsConnected)
             {
                 RUNPaketOlustur();
-                PaketGonder(commPro);
                
                 string ex = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program is executed...");
-                Helper.AppendText(rchtxtInfo, ex, Color.Purple);
-
-                rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                rchtxtInfo.ScrollToCaret();
+                rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, ex, Color.Blue)));
+                rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
+                rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
             }
             else
             {
@@ -580,10 +583,8 @@ namespace Bootloader
             if (serialPort.IsConnected)
             {
                 deviceMemory.ClearAll();
-                paketCount = 0; sofErr = 0; crcErr = 0;
 
                 ErasePaketOlustur();
-                PaketGonder(commPro);
             }
             else
             {
@@ -605,10 +606,8 @@ namespace Bootloader
                     for (int i = 0; i < count; i++, addr += 16)
                     {
                         VeriPaketOlustur(addr);
-                        PaketGonder(commPro);
                     }
                     CRCPaketOlustur();
-                    PaketGonder(commPro);
                 }
                 else
                 {
