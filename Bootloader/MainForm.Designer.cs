@@ -35,8 +35,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cmbDataWidth = new System.Windows.Forms.ComboBox();
             this.lblDataWidth = new System.Windows.Forms.Label();
-            this.txtSize = new System.Windows.Forms.TextBox();
-            this.lblSize = new System.Windows.Forms.Label();
             this.cmbAddress = new System.Windows.Forms.ComboBox();
             this.lblAddress = new System.Windows.Forms.Label();
             this.tooltipInfo = new System.Windows.Forms.ToolTip(this.components);
@@ -56,9 +54,11 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.listViewFile = new System.Windows.Forms.ListView();
             this.lblFileInfo = new System.Windows.Forms.Label();
-            this.lblStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.rchtxtInfo = new System.Windows.Forms.RichTextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -66,6 +66,7 @@
             this.tabFile.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // imgButtons
@@ -94,13 +95,11 @@
             // 
             this.groupBox1.Controls.Add(this.cmbDataWidth);
             this.groupBox1.Controls.Add(this.lblDataWidth);
-            this.groupBox1.Controls.Add(this.txtSize);
-            this.groupBox1.Controls.Add(this.lblSize);
             this.groupBox1.Controls.Add(this.cmbAddress);
             this.groupBox1.Controls.Add(this.lblAddress);
             this.groupBox1.Location = new System.Drawing.Point(415, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(435, 48);
+            this.groupBox1.Size = new System.Drawing.Size(300, 48);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Memory Display";
@@ -112,7 +111,7 @@
             "8 bits",
             "16 bits",
             "32 bits"});
-            this.cmbDataWidth.Location = new System.Drawing.Point(358, 17);
+            this.cmbDataWidth.Location = new System.Drawing.Point(230, 17);
             this.cmbDataWidth.Name = "cmbDataWidth";
             this.cmbDataWidth.Size = new System.Drawing.Size(56, 21);
             this.cmbDataWidth.TabIndex = 5;
@@ -123,32 +122,11 @@
             // lblDataWidth
             // 
             this.lblDataWidth.AutoSize = true;
-            this.lblDataWidth.Location = new System.Drawing.Point(290, 20);
+            this.lblDataWidth.Location = new System.Drawing.Point(162, 20);
             this.lblDataWidth.Name = "lblDataWidth";
             this.lblDataWidth.Size = new System.Drawing.Size(67, 13);
             this.lblDataWidth.TabIndex = 4;
             this.lblDataWidth.Text = "Data Width: ";
-            // 
-            // txtSize
-            // 
-            this.txtSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.txtSize.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtSize.Location = new System.Drawing.Point(199, 17);
-            this.txtSize.Name = "txtSize";
-            this.txtSize.Size = new System.Drawing.Size(73, 20);
-            this.txtSize.TabIndex = 3;
-            this.txtSize.Text = "0x1000";
-            this.txtSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtSize.Enter += new System.EventHandler(this.txtSize_Enter);
-            // 
-            // lblSize
-            // 
-            this.lblSize.AutoSize = true;
-            this.lblSize.Location = new System.Drawing.Point(165, 20);
-            this.lblSize.Name = "lblSize";
-            this.lblSize.Size = new System.Drawing.Size(30, 13);
-            this.lblSize.TabIndex = 2;
-            this.lblSize.Text = "Size:";
             // 
             // cmbAddress
             // 
@@ -262,7 +240,7 @@
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(845, 346);
+            this.tabControl1.Size = new System.Drawing.Size(845, 347);
             this.tabControl1.TabIndex = 12;
             // 
             // tabDeviceMemory
@@ -271,7 +249,7 @@
             this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
             this.tabDeviceMemory.Name = "tabDeviceMemory";
             this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 320);
+            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 321);
             this.tabDeviceMemory.TabIndex = 1;
             this.tabDeviceMemory.Text = "Device Memory";
             this.tabDeviceMemory.UseVisualStyleBackColor = true;
@@ -288,7 +266,7 @@
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 314);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 315);
             this.tableLayoutPanel3.TabIndex = 18;
             // 
             // listViewDevice
@@ -297,7 +275,7 @@
             this.listViewDevice.FullRowSelect = true;
             this.listViewDevice.GridLines = true;
             this.listViewDevice.HideSelection = false;
-            this.listViewDevice.Location = new System.Drawing.Point(3, 17);
+            this.listViewDevice.Location = new System.Drawing.Point(3, 18);
             this.listViewDevice.Name = "listViewDevice";
             this.listViewDevice.Size = new System.Drawing.Size(825, 294);
             this.listViewDevice.TabIndex = 17;
@@ -308,7 +286,7 @@
             // 
             this.lblDeviceMemory.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblDeviceMemory.AutoSize = true;
-            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 0);
+            this.lblDeviceMemory.Location = new System.Drawing.Point(3, 1);
             this.lblDeviceMemory.Name = "lblDeviceMemory";
             this.lblDeviceMemory.Size = new System.Drawing.Size(81, 13);
             this.lblDeviceMemory.TabIndex = 18;
@@ -320,7 +298,7 @@
             this.tabFile.Location = new System.Drawing.Point(4, 22);
             this.tabFile.Name = "tabFile";
             this.tabFile.Padding = new System.Windows.Forms.Padding(3);
-            this.tabFile.Size = new System.Drawing.Size(837, 320);
+            this.tabFile.Size = new System.Drawing.Size(837, 306);
             this.tabFile.TabIndex = 0;
             this.tabFile.Text = "File";
             this.tabFile.UseVisualStyleBackColor = true;
@@ -337,7 +315,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 314);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 300);
             this.tableLayoutPanel2.TabIndex = 17;
             // 
             // listViewFile
@@ -348,7 +326,7 @@
             this.listViewFile.HideSelection = false;
             this.listViewFile.Location = new System.Drawing.Point(3, 17);
             this.listViewFile.Name = "listViewFile";
-            this.listViewFile.Size = new System.Drawing.Size(825, 294);
+            this.listViewFile.Size = new System.Drawing.Size(825, 280);
             this.listViewFile.TabIndex = 17;
             this.listViewFile.UseCompatibleStateImageBehavior = false;
             this.listViewFile.View = System.Windows.Forms.View.Details;
@@ -363,48 +341,65 @@
             this.lblFileInfo.TabIndex = 18;
             this.lblFileInfo.Text = "File";
             // 
-            // lblStatus
-            // 
-            this.lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(3, 492);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(43, 13);
-            this.lblStatus.TabIndex = 16;
-            this.lblStatus.Text = "Status: ";
-            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 48.17861F));
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblStatus, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.rchtxtInfo, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 2);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 78);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72.13115F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 27.86885F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 509);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 27F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 517);
             this.tableLayoutPanel1.TabIndex = 13;
             // 
             // rchtxtInfo
             // 
             this.rchtxtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rchtxtInfo.Location = new System.Drawing.Point(3, 355);
+            this.rchtxtInfo.Location = new System.Drawing.Point(3, 356);
             this.rchtxtInfo.Name = "rchtxtInfo";
             this.rchtxtInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.rchtxtInfo.Size = new System.Drawing.Size(845, 130);
             this.rchtxtInfo.TabIndex = 17;
             this.rchtxtInfo.Text = "";
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.progressBar);
+            this.panel1.Controls.Add(this.lblStatus);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(3, 492);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(845, 22);
+            this.panel1.TabIndex = 18;
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(-1, 5);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(43, 13);
+            this.lblStatus.TabIndex = 19;
+            this.lblStatus.Text = "Status: ";
+            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(660, 1);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(182, 20);
+            this.progressBar.TabIndex = 20;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(874, 590);
+            this.ClientSize = new System.Drawing.Size(874, 596);
             this.Controls.Add(this.btnExecute);
             this.Controls.Add(this.btnVerify);
             this.Controls.Add(this.tableLayoutPanel1);
@@ -432,7 +427,8 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -449,15 +445,12 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ComboBox cmbAddress;
         private System.Windows.Forms.Label lblAddress;
-        private System.Windows.Forms.TextBox txtSize;
-        private System.Windows.Forms.Label lblSize;
         private System.Windows.Forms.ToolTip tooltipInfo;
         private System.Windows.Forms.ComboBox cmbDataWidth;
         private System.Windows.Forms.Label lblDataWidth;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabFile;
         private System.Windows.Forms.TabPage tabDeviceMemory;
-        private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.ListView listViewFile;
@@ -468,6 +461,9 @@
         private System.Windows.Forms.Label lblDeviceMemory;
         private System.Windows.Forms.RichTextBox rchtxtInfo;
         private System.Windows.Forms.Button btnExecute;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.ProgressBar progressBar;
     }
 }
 

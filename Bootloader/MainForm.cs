@@ -79,20 +79,19 @@ namespace Bootloader
         {
             deviceMemory.ClearAll();
             listViewDevice.Clear();
-
             rchtxtInfo.Invoke(new Action(() => rchtxtInfo.Text = string.Empty));
-            rchtxtInfo.Text = string.Empty;
+            progressBar.Minimum = 0;
+            progressBar.Value = 0;
 
             if (args.Connected)
             {
                 BaglantiPaketOlustur();
-
                 OkumaPaketOlustur();
 
-                lblStatus.Text = "Status: Connected!";
+                lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Connected!"));
             }
             else
-                lblStatus.Text = "Status: Disconnected!";
+                lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Disconnected!"));
         }
 
         // PaketTopla Metotlari
@@ -123,7 +122,6 @@ namespace Bootloader
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", deviceMemory.paketCount, deviceMemory.sofErr, deviceMemory.crcErr);
         }
-        
         private void DeviceMemoryWriteProcess()
         {
             if (serialPort.IsConnected)
@@ -142,7 +140,6 @@ namespace Bootloader
                     {
                         string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
                         rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
-                        //Thread.Sleep(100);
                         deviceMemory.ClearAll();
                         OkumaPaketOlustur();
                     }
@@ -504,6 +501,8 @@ namespace Bootloader
         // Buton Click Eventlari
         private void btnConnect_Click(object sender, EventArgs e)
         {
+            Helper.SerialPortDetect();
+
             List<string> comNames = Helper.comNames;
             string device = string.Empty;
 
@@ -531,6 +530,7 @@ namespace Bootloader
                         var retVal = MessageBox.Show("The ST device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
                         if (retVal.ToString() == "Yes")
                         {
+                            Helper.SerialPortDetect();
                             SerialPortForm seriPortForm = new SerialPortForm(comNames);
                             seriPortForm.VisibleChanged += SeriPortForm_VisibleChanged;
                             seriPortForm.FormClosed += SeriPortForm_FormClosed;
@@ -645,6 +645,9 @@ namespace Bootloader
                         int addrMax = fileChunk.addrMax;
                         int addrMin = fileChunk.addrMin;
                         int addr = addrMin;
+                        cmbAddress.Text = "0x" + addrMin.ToString("X8");
+                        if (!cmbAddress.Items.Contains(cmbAddress.Text))
+                            cmbAddress.Items.Add(cmbAddress.Text);
 
                         fileChunk.CRC32 = 0;
 
@@ -660,7 +663,6 @@ namespace Bootloader
                         string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + fileChunk.fileText + " opened successfully.\n");
                         info += string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum: 0x" + fileChunk.CRC32.ToString("X8"));
                         rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, info, Color.Green)));
-                        
                     }
                     else
                     {
@@ -717,19 +719,19 @@ namespace Bootloader
             int addrMax = dataChunk.addrMax;
             int addrMin = dataChunk.addrMin;
             int addr = addrMin;
+            progressBar.Minimum = addrMin;
+            progressBar.Maximum = addrMax;
 
             ListViewItem lst;
             List<string> listString;
-
             var items = new List<ListViewItem>();
-
 
             for (int i = 0; addr < addrMax; i++, addr += dataCount)
             {
+                progressBar.Value = addr;
                 if (dataChunk.datas.ContainsKey(addr) == false)
-                {
                     continue;
-                }
+
                 listString = new List<string>();
                 listString.Add("0x" + addr.ToString("X8"));
                 for (int j = 0; j < dataChunk.datas[addr].Count; j++)
@@ -762,9 +764,7 @@ namespace Bootloader
                 }
                 string[] str = listString.ToArray();
                 lst = new ListViewItem(str);
-
                 items.Add(lst);
-
                 //listView.Items.Add(lst);
             }
 
@@ -807,18 +807,22 @@ namespace Bootloader
             int addrMax = dataChunk.addrMax;
             int addrMin = dataChunk.addrMin;
             int addr = addrMin;
-   
+            progressBar.Minimum = addrMin;
+            progressBar.Maximum = addrMax;
+            cmbAddress.Text = "0x" + addrMin.ToString("X8");
+            if (!cmbAddress.Items.Contains(cmbAddress.Text))
+                cmbAddress.Items.Add(cmbAddress.Text);
+
             ListViewItem lst;
             List<string> listString;
-
             var items = new List<ListViewItem>();
 
             for (int i = 0; addr < addrMax; i++, addr += dataCount)
             {
+                //progressBar.Invoke(new Action(() => progressBar.Value = addr));
+                progressBar.Value = addr;
                 if (dataChunk.datas.ContainsKey(addr) == false)
-                {
                     continue;
-                }
 
                 listString = new List<string>();
                 listString.Add("0x" + addr.ToString("X8"));
@@ -854,9 +858,7 @@ namespace Bootloader
 
                 string[] str = listString.ToArray();
                 lst = new ListViewItem(str);
-
                 items.Add(lst);
-
                 //listView.Items.Add(lst);
             }
             ListViewItem[] arr = items.ToArray();
@@ -1119,7 +1121,5 @@ namespace Bootloader
             }
             serialPort.Disconnect();
         }
-
-        
     }
 }

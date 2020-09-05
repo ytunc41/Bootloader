@@ -13,15 +13,23 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.5.0";
+            getVS = "v1.5.1";
         }
 
-        /* Versiyon: 1.5.0.
+        /* Versiyon: 1.5.1
+         * Tarih: 05.09.2020
+         * 
+         * - ST cihaz bulunamadiginda kullanici secimine sunulmadan once tekrardan seri port algilama metodu eklenerek sepi portlarin listelenmesi saglanmistir.
+         * - ProgresBar eklenerek listview nesnesine veri yazdirirken yuklenme seviyesi gosterilmistir.
+         * - cmbAdress nesnesine cihazin minimum adresi otomatik olarak yazdirilmasi ve dinamik olarak eklenmesi saglanmistir.
+         * - Hata duzeltmeleri yapilmistir.
+         */
+
+        /* Versiyon: 1.5.0
          * Tarih: 04.09.2020
          * 
          * - PROGRAM hafızasi 32kB oldugundan gomulu tarafindan gelen flashSize degiskeni 2'ye bolunerek adresin 0x8008000'den baslaması saglanmistir.
          * - Baglantı degisimi eventHandler içerisinde rchTxtInfo için Invoke methodu kullanılmıstır.
-         *
          */
 
         /* Versiyon: 1.4.4
