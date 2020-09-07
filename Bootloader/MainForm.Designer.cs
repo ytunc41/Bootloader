@@ -41,7 +41,6 @@
             this.btnOpen = new System.Windows.Forms.Button();
             this.btnErase = new System.Windows.Forms.Button();
             this.btnDisconnect = new System.Windows.Forms.Button();
-            this.btnRefresh = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnVerify = new System.Windows.Forms.Button();
             this.btnExecute = new System.Windows.Forms.Button();
@@ -57,8 +56,8 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.rchtxtInfo = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.lblStatus = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabDeviceMemory.SuspendLayout();
@@ -97,7 +96,7 @@
             this.groupBox1.Controls.Add(this.lblDataWidth);
             this.groupBox1.Controls.Add(this.cmbAddress);
             this.groupBox1.Controls.Add(this.lblAddress);
-            this.groupBox1.Location = new System.Drawing.Point(415, 12);
+            this.groupBox1.Location = new System.Drawing.Point(345, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(300, 48);
             this.groupBox1.TabIndex = 9;
@@ -152,7 +151,7 @@
             // 
             this.btnOpen.ImageKey = "open_icon.png";
             this.btnOpen.ImageList = this.imgButtons;
-            this.btnOpen.Location = new System.Drawing.Point(190, 12);
+            this.btnOpen.Location = new System.Drawing.Point(136, 12);
             this.btnOpen.Name = "btnOpen";
             this.btnOpen.Size = new System.Drawing.Size(44, 44);
             this.btnOpen.TabIndex = 7;
@@ -164,7 +163,7 @@
             // 
             this.btnErase.ImageKey = "eraser_icon.png";
             this.btnErase.ImageList = this.imgButtons;
-            this.btnErase.Location = new System.Drawing.Point(340, 12);
+            this.btnErase.Location = new System.Drawing.Point(286, 12);
             this.btnErase.Name = "btnErase";
             this.btnErase.Size = new System.Drawing.Size(44, 44);
             this.btnErase.TabIndex = 5;
@@ -184,18 +183,6 @@
             this.btnDisconnect.UseVisualStyleBackColor = true;
             this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
             // 
-            // btnRefresh
-            // 
-            this.btnRefresh.ImageKey = "refresh_icon.png";
-            this.btnRefresh.ImageList = this.imgRefresh;
-            this.btnRefresh.Location = new System.Drawing.Point(112, 12);
-            this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(44, 44);
-            this.btnRefresh.TabIndex = 2;
-            this.tooltipInfo.SetToolTip(this.btnRefresh, "Refresh the com device.");
-            this.btnRefresh.UseVisualStyleBackColor = true;
-            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
-            // 
             // btnConnect
             // 
             this.btnConnect.ImageKey = "usb_conn_icon.png";
@@ -212,7 +199,7 @@
             // 
             this.btnVerify.ImageKey = "verify_icon2.png";
             this.btnVerify.ImageList = this.imgButtons;
-            this.btnVerify.Location = new System.Drawing.Point(240, 12);
+            this.btnVerify.Location = new System.Drawing.Point(186, 12);
             this.btnVerify.Name = "btnVerify";
             this.btnVerify.Size = new System.Drawing.Size(44, 44);
             this.btnVerify.TabIndex = 14;
@@ -224,7 +211,7 @@
             // 
             this.btnExecute.ImageKey = "start-32.png";
             this.btnExecute.ImageList = this.imgButtons;
-            this.btnExecute.Location = new System.Drawing.Point(290, 12);
+            this.btnExecute.Location = new System.Drawing.Point(236, 12);
             this.btnExecute.Name = "btnExecute";
             this.btnExecute.Size = new System.Drawing.Size(44, 44);
             this.btnExecute.TabIndex = 15;
@@ -240,7 +227,7 @@
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(845, 347);
+            this.tabControl1.Size = new System.Drawing.Size(845, 356);
             this.tabControl1.TabIndex = 12;
             // 
             // tabDeviceMemory
@@ -249,7 +236,7 @@
             this.tabDeviceMemory.Location = new System.Drawing.Point(4, 22);
             this.tabDeviceMemory.Name = "tabDeviceMemory";
             this.tabDeviceMemory.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 321);
+            this.tabDeviceMemory.Size = new System.Drawing.Size(837, 330);
             this.tabDeviceMemory.TabIndex = 1;
             this.tabDeviceMemory.Text = "Device Memory";
             this.tabDeviceMemory.UseVisualStyleBackColor = true;
@@ -266,7 +253,7 @@
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 315);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(831, 324);
             this.tableLayoutPanel3.TabIndex = 18;
             // 
             // listViewDevice
@@ -277,7 +264,7 @@
             this.listViewDevice.HideSelection = false;
             this.listViewDevice.Location = new System.Drawing.Point(3, 18);
             this.listViewDevice.Name = "listViewDevice";
-            this.listViewDevice.Size = new System.Drawing.Size(825, 294);
+            this.listViewDevice.Size = new System.Drawing.Size(825, 303);
             this.listViewDevice.TabIndex = 17;
             this.listViewDevice.UseCompatibleStateImageBehavior = false;
             this.listViewDevice.View = System.Windows.Forms.View.Details;
@@ -298,7 +285,7 @@
             this.tabFile.Location = new System.Drawing.Point(4, 22);
             this.tabFile.Name = "tabFile";
             this.tabFile.Padding = new System.Windows.Forms.Padding(3);
-            this.tabFile.Size = new System.Drawing.Size(837, 306);
+            this.tabFile.Size = new System.Drawing.Size(837, 330);
             this.tabFile.TabIndex = 0;
             this.tabFile.Text = "File";
             this.tabFile.UseVisualStyleBackColor = true;
@@ -315,7 +302,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.77707F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 95.22293F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 300);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(831, 324);
             this.tableLayoutPanel2.TabIndex = 17;
             // 
             // listViewFile
@@ -324,9 +311,9 @@
             this.listViewFile.FullRowSelect = true;
             this.listViewFile.GridLines = true;
             this.listViewFile.HideSelection = false;
-            this.listViewFile.Location = new System.Drawing.Point(3, 17);
+            this.listViewFile.Location = new System.Drawing.Point(3, 18);
             this.listViewFile.Name = "listViewFile";
-            this.listViewFile.Size = new System.Drawing.Size(825, 280);
+            this.listViewFile.Size = new System.Drawing.Size(825, 303);
             this.listViewFile.TabIndex = 17;
             this.listViewFile.UseCompatibleStateImageBehavior = false;
             this.listViewFile.View = System.Windows.Forms.View.Details;
@@ -335,7 +322,7 @@
             // 
             this.lblFileInfo.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblFileInfo.AutoSize = true;
-            this.lblFileInfo.Location = new System.Drawing.Point(3, 0);
+            this.lblFileInfo.Location = new System.Drawing.Point(3, 1);
             this.lblFileInfo.Name = "lblFileInfo";
             this.lblFileInfo.Size = new System.Drawing.Size(23, 13);
             this.lblFileInfo.TabIndex = 18;
@@ -348,22 +335,22 @@
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.rchtxtInfo, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 2);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 78);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 66);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72.13115F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 27.86885F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 27F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 517);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(851, 529);
             this.tableLayoutPanel1.TabIndex = 13;
             // 
             // rchtxtInfo
             // 
             this.rchtxtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rchtxtInfo.Location = new System.Drawing.Point(3, 356);
+            this.rchtxtInfo.Location = new System.Drawing.Point(3, 365);
             this.rchtxtInfo.Name = "rchtxtInfo";
             this.rchtxtInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.rchtxtInfo.Size = new System.Drawing.Size(845, 130);
+            this.rchtxtInfo.Size = new System.Drawing.Size(845, 133);
             this.rchtxtInfo.TabIndex = 17;
             this.rchtxtInfo.Text = "";
             // 
@@ -372,10 +359,17 @@
             this.panel1.Controls.Add(this.progressBar);
             this.panel1.Controls.Add(this.lblStatus);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 492);
+            this.panel1.Location = new System.Drawing.Point(3, 504);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(845, 22);
             this.panel1.TabIndex = 18;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(660, 1);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(182, 20);
+            this.progressBar.TabIndex = 20;
             // 
             // lblStatus
             // 
@@ -387,13 +381,6 @@
             this.lblStatus.TabIndex = 19;
             this.lblStatus.Text = "Status: ";
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // progressBar
-            // 
-            this.progressBar.Location = new System.Drawing.Point(660, 1);
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(182, 20);
-            this.progressBar.TabIndex = 20;
             // 
             // MainForm
             // 
@@ -407,7 +394,6 @@
             this.Controls.Add(this.btnOpen);
             this.Controls.Add(this.btnErase);
             this.Controls.Add(this.btnDisconnect);
-            this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.btnConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -416,7 +402,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ASOS Bootloader";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(this.MainForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
@@ -437,7 +422,6 @@
 
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.ImageList imgButtons;
-        private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.Button btnErase;
         private System.Windows.Forms.Button btnOpen;

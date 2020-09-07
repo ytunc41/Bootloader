@@ -13,8 +13,16 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.5.1";
+            getVS = "v1.5.2";
         }
+
+        /* Versiyon: 1.5.2
+         * Tarih: 07.09.2020
+         * 
+         * - Refresh butonu kaldirilmistir.
+         * - Com port secim formundan onceki messageBox nesnesinde question icon'u eklenmistir.
+         * - Duzenlemeler yapilmistir.
+         */
 
         /* Versiyon: 1.5.1
          * Tarih: 05.09.2020

@@ -51,13 +51,14 @@ namespace Bootloader
             serialPort.MessageReceived += SerialPort_MessageReceived;
             Helper.SerialPortDetect();
         }
-        
+
+        #region SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
         private delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
         public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
         {
             if (control.InvokeRequired)
             {
-                control.Invoke(new SetControlPropertyThreadSafeDelegate (SetControlPropertyThreadSafe),
+                control.Invoke(new SetControlPropertyThreadSafeDelegate(SetControlPropertyThreadSafe),
                 new object[] { control, propertyName, propertyValue });
             }
             else
@@ -65,6 +66,7 @@ namespace Bootloader
                 control.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, null, control, new object[] { propertyValue });
             }
         }
+        #endregion
 
         #region Communication Method/Events
         // SerialPort Eventlari
@@ -122,37 +124,7 @@ namespace Bootloader
             deviceMemory.AddHT(addr, data);
             Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", deviceMemory.paketCount, deviceMemory.sofErr, deviceMemory.crcErr);
         }
-        private void DeviceMemoryWriteProcess()
-        {
-            if (serialPort.IsConnected)
-            {
-                if (commPro.PACKET_TYPE_FLAG.READ_OK)
-                {
-                    if (deviceMemory.paketCount == deviceMemory.totalPacket && deviceMemory.sofErr == 0 && deviceMemory.crcErr == 0)
-                    {
-                        tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
-                        listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
-
-                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "ST device memory collected successfully.");
-                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
-                    }
-                    else
-                    {
-                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
-                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
-                        deviceMemory.ClearAll();
-                        OkumaPaketOlustur();
-                    }
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
-                }
-            }
-            else
-            {
-                MessageBox.Show("No ST Device Detected!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
+        
         // PaketOlustur Metotlari
         private void BaglantiPaketOlustur()
         {
@@ -480,6 +452,12 @@ namespace Bootloader
         }
         #endregion
 
+        // MainForm Eventlari
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            serialPort.Disconnect();
+        }
+
         // SeriPortForm Eventlari
         private void SeriPortForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -527,7 +505,7 @@ namespace Bootloader
                     }
                     else
                     {
-                        var retVal = MessageBox.Show("The ST device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                        var retVal = MessageBox.Show("The ST device was not found automatically!\n\nWould you like to choose the com port?", "Serial Port Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                         if (retVal.ToString() == "Yes")
                         {
                             Helper.SerialPortDetect();
@@ -544,7 +522,7 @@ namespace Bootloader
                 }
                 else
                 {
-                    lblStatus.Text = "Status: Com port connected to computer not found! If your ST device is connected, please click the refresh button!";
+                    lblStatus.Text = "Status: Com port connected to computer not found!";
                     MessageBox.Show("The ST device not detected!", "Serial Port Connection", 0, MessageBoxIcon.Information);
                 }
             }
@@ -559,10 +537,6 @@ namespace Bootloader
                 serialPort.Disconnect();
             else
                 MessageBox.Show("The ST device is not already connected!", "Serial Port Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        private void btnRefresh_Click(object sender, EventArgs e)
-        {
-            Helper.SerialPortDetect();
         }
         private void btnExecute_Click(object sender, EventArgs e)
         {
@@ -676,6 +650,36 @@ namespace Bootloader
         }
 
         // Verileri Yazdirma Metotlari
+        private void DeviceMemoryWriteProcess()
+        {
+            if (serialPort.IsConnected)
+            {
+                if (commPro.PACKET_TYPE_FLAG.READ_OK)
+                {
+                    if (deviceMemory.paketCount == deviceMemory.totalPacket && deviceMemory.sofErr == 0 && deviceMemory.crcErr == 0)
+                    {
+                        tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
+                        listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
+
+                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "ST device memory collected successfully.");
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
+                    }
+                    else
+                    {
+                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
+                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
+                        deviceMemory.ClearAll();
+                        OkumaPaketOlustur();
+                    }
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
+                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
+                }
+            }
+            else
+            {
+                MessageBox.Show("No ST Device Detected!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         private void TabFileTextProcess(string filePath, HexFile fileChunk)
         {
             tabControl1.SelectedTab = tabFile;
@@ -1062,7 +1066,6 @@ namespace Bootloader
             }
             return check;
         }
-
         #region DataChunk to Write DataGridView (inactive)
         //private void WriteDataGridView(DataChunk dataChunk)
         //{
@@ -1101,25 +1104,7 @@ namespace Bootloader
         //}
 
         #endregion
-
-        private void txtSize_Enter(object sender, EventArgs e)
-        {
-            //TextBox t1 = (TextBox)sender;
-            //t1.Text = string.Empty;
-        }
         
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (serialPort.IsConnected)
-            {
-                serialPort.Disconnect();
-            }
-            serialPort.Disconnect();
-        }
+        
     }
 }
