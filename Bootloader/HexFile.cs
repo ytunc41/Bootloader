@@ -16,6 +16,7 @@ namespace Bootloader
 
         private static int _addrMin;
         public int addrMin { get { _addrMin = this.datas.Keys.Min(); return _addrMin; } private set { _addrMin = value; } }
+        
         private static int _addrMax;
         public int addrMax { get { _addrMax = datas.Keys.Max() + datas[datas.Keys.Max()].Count; return _addrMax; } private set { _addrMax = value; } }
 

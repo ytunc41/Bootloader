@@ -11,8 +11,10 @@ namespace Bootloader
     {
         private static int _baseAddr;
         public int baseAddr { get { return _baseAddr; } set { _baseAddr = value; } }
+
         private static int _startAddr;
         public int startAddr { get { return _startAddr; } set { _startAddr = value; } }
+
         private static int _memAddres;
         public int memAddres{
             get

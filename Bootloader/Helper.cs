@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Management;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,6 +13,7 @@ namespace Bootloader
 {
     public static class Helper
     {
+        public static Thread threadIsConnect;
         public static List<string> comNames = new List<string>();
         public static Stopwatch stopWatch = new Stopwatch();
 
@@ -49,7 +51,6 @@ namespace Bootloader
             box.SelectionColor = box.ForeColor;
             box.AppendText(Environment.NewLine);
         }
-
 
 
     }

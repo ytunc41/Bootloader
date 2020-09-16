@@ -8,13 +8,20 @@ namespace Bootloader
 {
     public static class Versiyon
     {
-        private static string _versiyon;
-        public static string getVS { get { return _versiyon; } private set { _versiyon = value; } }
+        public static string getVS { get; private set; }
 
         static Versiyon()
         {
-            getVS = "v1.5.2";
+            getVS = "v1.5.3";
         }
+
+        /* Versiyon: 1.5.3
+         * Tarih: 17.09.2020
+         * 
+         * - BaglantiOkPaketTopla, ProgramOkPaketTopla, ProgramErrorPaketTopla, EraseOkPaketTopla ve ReadOkPaketTopla metotlari eklenmistir.
+         * - USB baglantisi kurarken 5sn timeout suresi belirlenip bu sure icerisinde baglanti paketi gelmezse haberlesme sonlandirilmaktadir.
+         * - Hata duzeltmeleri yapilmistir.
+         */
 
         /* Versiyon: 1.5.2
          * Tarih: 07.09.2020
@@ -123,7 +130,6 @@ namespace Bootloader
          * Tarih: 31.08.2020
          * 
          * -ListView yazma islemleri icin yeni bir metot kullanilmistir.
-         * 
          */
 
         /* Versiyon: 1.1.0

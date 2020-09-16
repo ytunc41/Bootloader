@@ -89,42 +89,27 @@ namespace Bootloader
             {
                 BaglantiPaketOlustur();
                 OkumaPaketOlustur();
-
-                lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Connected!"));
             }
             else
-                lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Disconnected!"));
+            {
+                if (lblStatus.InvokeRequired)
+                    lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Disconnected!"));
+                else
+                    lblStatus.Text = "Status: Disconnected!";
+            }
         }
 
-        // PaketTopla Metotlari
-        private void CihazBilgisiPaketTopla()
+        // Information RichTextBox delegesi
+        private Delegate delegateScroll(RichTextBox rchtxtInfo)
         {
-            UINT8 paket_sayaci = 0;
-            UINT32 u_id1 = 0;
-            UINT32 u_id2 = 0;
-            UINT32 u_id3 = 0;
-            UINT16 flashSize = 0;
-
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
-            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
-            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
-
-            deviceMemory.uniqueID[0] = u_id1;
-            deviceMemory.uniqueID[1] = u_id2;
-            deviceMemory.uniqueID[2] = u_id3;
-            deviceMemory.flashSize = flashSize;
+            Action actScroll = () =>
+            {
+                rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
+                rchtxtInfo.ScrollToCaret();
+            };
+            return actScroll;
         }
-        private void VeriPaketTopla()
-        {
-            int addr = BitConverter.ToInt32(ReceivedPacket.data, 0);
-            List<UINT8> data = new List<UINT8>();
-            for (int i = 4; i < ReceivedPacket.dataSize; i++)
-                data.Add(ReceivedPacket.data[i]);
-            deviceMemory.AddHT(addr, data);
-            Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", deviceMemory.paketCount, deviceMemory.sofErr, deviceMemory.crcErr);
-        }
-        
+
         // PaketOlustur Metotlari
         private void BaglantiPaketOlustur()
         {
@@ -323,35 +308,12 @@ namespace Bootloader
                     {
                         commPro.PACKET_TYPE_FLAG.ClearAll();
 
-                        Action actScroll = () =>
-                        {
-                            rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                            rchtxtInfo.ScrollToCaret();
-                        };
-
                         switch (ReceivedPacket.packetType)
                         {
                             case (UINT8)PACKET_TYPE.BAGLANTI_OK:
                                 {
+                                    BaglantiOkPaketTopla();
                                     commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = true;
-
-                                    CihazBilgisiPaketTopla();
-
-                                    string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
-                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, stm, Color.Green)));
-
-                                    for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
-                                    {
-                                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                        str += string.Format("Device Unique ID {0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
-                                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
-                                    }
-
-                                    string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                    strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
-                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, strf, Color.Purple)));
-                                    rchtxtInfo.Invoke(actScroll);
-
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_REQUEST:
@@ -362,10 +324,8 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.READ_OK:
                                 {
+                                    ReadOkPaketTopla();
                                     commPro.PACKET_TYPE_FLAG.READ_OK = true;
-
-                                    DeviceMemoryWriteProcess();
-
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.READ_ERROR:
@@ -381,36 +341,14 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.PROGRAM_OK:
                                 {
+                                    ProgramOkPaketTopla();
                                     commPro.PACKET_TYPE_FLAG.PROGRAM_OK = true;
-
-                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
-                                    elps += string.Format("Memory programmed in " + Helper.stopWatch.ElapsedMilliseconds + " milliseconds.");
-
-                                    elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
-                                    elps += "Verification OK!";
-
-                                    elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
-                                    elps += string.Format("Programmed memory Checksum: 0x" + fileChunk.CRC32.ToString("X8"));
-
-                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
-                                    rchtxtInfo.Invoke(actScroll);
-
-                                    Helper.stopWatch.Stop();
-
-                                    deviceMemory.ClearAll();
-                                    OkumaPaketOlustur();
-
                                     break;
                                 }
 
                             case (UINT8)PACKET_TYPE.PROGRAM_ERROR:
                                 {
-                                    string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum Error!");
-                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
-                                    rchtxtInfo.Invoke(actScroll);
-
-                                    Helper.stopWatch.Stop();
-
+                                    ProgramErrorPaketTopla();
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_REQUEST:
@@ -420,15 +358,8 @@ namespace Bootloader
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_OK:
                                 {
+                                    EraseOkPaketTopla();
                                     commPro.PACKET_TYPE_FLAG.ERASE_OK = true;
-
-                                    string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program memory erased.");
-                                    rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
-                                    rchtxtInfo.Invoke(actScroll);
-
-                                    deviceMemory.ClearAll();
-                                    OkumaPaketOlustur();
-
                                     break;
                                 }
                             case (UINT8)PACKET_TYPE.ERASE_ERROR:
@@ -452,6 +383,111 @@ namespace Bootloader
         }
         #endregion
 
+        // PaketTopla Metotlari
+        private void BaglantiOkPaketTopla()
+        {
+            lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Connected!"));
+            progressBar.Invoke(new Action(() => progressBar.Value = progressBar.Maximum));
+
+            CihazBilgisiPaketTopla();
+
+            string stm = DateTime.Now.ToString("HH:mm:ss") + " --> " + "Device: STM32F103C8T6";
+            rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, stm, Color.Green)));
+
+            for (int i = 0; i < deviceMemory.uniqueID.Length; i++)
+            {
+                string strd = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+                strd += string.Format("Device Unique ID {0}: " + deviceMemory.uniqueID[i].ToString("X8"), i);
+                rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, strd, Color.Green)));
+            }
+
+            string strf = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+            strf += string.Format("Device Flash Size: " + deviceMemory.flashSize + " kbytes");
+            rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, strf, Color.Purple)));
+            rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
+        }
+        private void CihazBilgisiPaketTopla()
+        {
+            UINT8 paket_sayaci = 0;
+            UINT32 u_id1 = 0;
+            UINT32 u_id2 = 0;
+            UINT32 u_id3 = 0;
+            UINT16 flashSize = 0;
+
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id1);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id2);
+            Paket_Islemleri_LE.UINT32_birlestir(ReceivedPacket.data, ref paket_sayaci, ref u_id3);
+            Paket_Islemleri_LE.UINT16_birlestir(ReceivedPacket.data, ref paket_sayaci, ref flashSize);
+
+            deviceMemory.uniqueID[0] = u_id1;
+            deviceMemory.uniqueID[1] = u_id2;
+            deviceMemory.uniqueID[2] = u_id3;
+            deviceMemory.flashSize = flashSize;
+        }
+        private void ReadOkPaketTopla()
+        {
+            if (deviceMemory.paketCount == deviceMemory.totalPacket && deviceMemory.sofErr == 0 && deviceMemory.crcErr == 0)
+            {
+                tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
+                listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
+
+                string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "ST device memory collected successfully.");
+                rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
+            }
+            else
+            {
+                string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
+                rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
+                deviceMemory.ClearAll();
+                OkumaPaketOlustur();
+            }
+            rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
+        }
+        private void ProgramOkPaketTopla()
+        {
+            string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
+            elps += string.Format("Memory programmed in " + Helper.stopWatch.ElapsedMilliseconds + " milliseconds.");
+
+            elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
+            elps += "Verification OK!";
+
+            elps += string.Format(DateTime.Now.ToString("\nHH:mm:ss") + " --> ");
+            elps += string.Format("Programmed memory Checksum: 0x" + fileChunk.CRC32.ToString("X8"));
+
+            rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
+            rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
+
+            Helper.stopWatch.Stop();
+
+            deviceMemory.ClearAll();
+            OkumaPaketOlustur();
+        }
+        private void ProgramErrorPaketTopla()
+        {
+            string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum Error!");
+            rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
+            rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
+            Helper.stopWatch.Stop();
+        }
+        private void EraseOkPaketTopla()
+        {
+            string elps = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program memory erased.");
+            rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, elps, Color.Blue)));
+            rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
+
+            deviceMemory.ClearAll();
+            OkumaPaketOlustur();
+        }
+        private void VeriPaketTopla()
+        {
+            int addr = BitConverter.ToInt32(ReceivedPacket.data, 0);
+            List<UINT8> data = new List<UINT8>();
+            for (int i = 4; i < ReceivedPacket.dataSize; i++)
+                data.Add(ReceivedPacket.data[i]);
+            deviceMemory.AddHT(addr, data);
+            Console.WriteLine("paketCount: {0}\tsofErr: {1}\tcrcErr: {2}", deviceMemory.paketCount, deviceMemory.sofErr, deviceMemory.crcErr);
+        }
+
         // MainForm Eventlari
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -473,6 +509,45 @@ namespace Bootloader
                 serialPort.SetPort(comVal, 115200);
                 serialPort.Connect();
                 seriPortForm.Dispose();
+                if (lblStatus.InvokeRequired)
+                    lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Trying to connect..."));
+                else
+                    lblStatus.Text = "Status: Trying to connect...";
+                Helper.stopWatch.Start();
+                Helper.threadIsConnect = new Thread(IsConnect);
+                Helper.threadIsConnect.Start();
+            }
+        }
+        private void IsConnect()
+        {
+            int timeout = 5000, timemin = 500;
+            while (true)
+            {
+                if (commPro.PACKET_TYPE_FLAG.BAGLANTI_OK)
+                {
+                    Helper.stopWatch.Reset();
+                    Helper.threadIsConnect.Abort();
+                }
+                else
+                {
+                    if (Helper.stopWatch.ElapsedMilliseconds >= timemin)
+                    {
+                        string str = string.Format("Status: Trying to connect... {0}", timeout + timemin - Helper.stopWatch.ElapsedMilliseconds);
+                        if (lblStatus.InvokeRequired)
+                        {
+                            lblStatus.EndInvoke(lblStatus.BeginInvoke(new Action(() => lblStatus.Text = str)));
+                        }
+                        else
+                            lblStatus.Text = str;
+
+                        if (Helper.stopWatch.ElapsedMilliseconds >= timeout + timemin)
+                        {
+                            serialPort.Disconnect();
+                            Helper.stopWatch.Reset();
+                            Helper.threadIsConnect.Abort();
+                        }
+                    }
+                }
             }
         }
 
@@ -480,14 +555,13 @@ namespace Bootloader
         private void btnConnect_Click(object sender, EventArgs e)
         {
             Helper.SerialPortDetect();
-
             List<string> comNames = Helper.comNames;
-            string device = string.Empty;
 
             if (!serialPort.IsConnected)
             {
                 if (comNames.Count != 0)
                 {
+                    string device = string.Empty;
                     foreach (var item in comNames)
                     {
                         if (item.IndexOf("STM") != -1 || item.IndexOf("USB Seri Cihaz") != -1)
@@ -502,6 +576,13 @@ namespace Bootloader
                         string comVal = device.Substring(device.IndexOf("(COM") + 1, device.IndexOf(")") - (device.IndexOf("(COM") + 1));
                         serialPort.SetPort(comVal, 115200);
                         serialPort.Connect();
+                        if (lblStatus.InvokeRequired)
+                            lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Trying to connect..."));
+                        else
+                            lblStatus.Text = "Status: Trying to connect...";
+                        Helper.stopWatch.Start();
+                        Helper.threadIsConnect = new Thread(IsConnect);
+                        Helper.threadIsConnect.Start();
                     }
                     else
                     {
@@ -516,20 +597,27 @@ namespace Bootloader
                         }
                         else
                         {
-                            lblStatus.Text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
+                            string text = "Status: Com ports connected to the computer were found but ST device was not found automatically!";
+                            if (lblStatus.InvokeRequired)
+                                lblStatus.Invoke(new Action(() => lblStatus.Text = text));
+                            else
+                                lblStatus.Text = text;
                         }
                     }
                 }
                 else
                 {
-                    lblStatus.Text = "Status: Com port connected to computer not found!";
+                    if (lblStatus.InvokeRequired)
+                        lblStatus.Invoke(new Action(() => lblStatus.Text = "Status: Com port connected to computer not found!"));
+                    else
+                        lblStatus.Text = "Status: Com port connected to computer not found!";
                     MessageBox.Show("The ST device not detected!", "Serial Port Connection", 0, MessageBoxIcon.Information);
                 }
             }
             else
             {
                 MessageBox.Show("The device is already connected!", "Serial Port Connection", 0, MessageBoxIcon.Information);
-            }   
+            }
         }
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
@@ -546,8 +634,7 @@ namespace Bootloader
                
                 string ex = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Program is executed...");
                 rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, ex, Color.Blue)));
-                rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
-                rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
+                rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
             }
             else
             {
@@ -643,43 +730,12 @@ namespace Bootloader
                         string info = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> ");
                         rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, info + fileChunk.fileText + " Hex file not open successfully.", Color.Red)));
                     }
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
+                    rchtxtInfo.Invoke(delegateScroll(rchtxtInfo));
                 }
             }
         }
 
         // Verileri Yazdirma Metotlari
-        private void DeviceMemoryWriteProcess()
-        {
-            if (serialPort.IsConnected)
-            {
-                if (commPro.PACKET_TYPE_FLAG.READ_OK)
-                {
-                    if (deviceMemory.paketCount == deviceMemory.totalPacket && deviceMemory.sofErr == 0 && deviceMemory.crcErr == 0)
-                    {
-                        tabControl1.Invoke(new Action(() => tabControl1.SelectedTab = tabDeviceMemory));
-                        listViewDevice.Invoke(new Action(() => DataChunkToWriteListView(deviceMemory, listViewDevice)));
-
-                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "ST device memory collected successfully.");
-                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Green)));
-                    }
-                    else
-                    {
-                        string str = string.Format(DateTime.Now.ToString("HH:mm:ss") + " --> " + "Checksum error found while receiving data!");
-                        rchtxtInfo.Invoke(new Action(() => Helper.AppendText(rchtxtInfo, str, Color.Red)));
-                        deviceMemory.ClearAll();
-                        OkumaPaketOlustur();
-                    }
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length));
-                    rchtxtInfo.Invoke(new Action(() => rchtxtInfo.ScrollToCaret()));
-                }
-            }
-            else
-            {
-                MessageBox.Show("No ST Device Detected!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
         private void TabFileTextProcess(string filePath, HexFile fileChunk)
         {
             tabControl1.SelectedTab = tabFile;
@@ -1066,44 +1122,6 @@ namespace Bootloader
             }
             return check;
         }
-        #region DataChunk to Write DataGridView (inactive)
-        //private void WriteDataGridView(DataChunk dataChunk)
-        //{
-        //    dataGrid.ColumnCount = 17;
-        //    for (int i = 0; i < dataGrid.ColumnCount; i++)
-        //    {
-        //        dataGrid.Columns[i].Name = i.ToString("X");
-        //        dataGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-        //    }
-        //    dataGrid.Columns[16].Name = "ASCII";
-
-        //    int dataCount = 16;
-        //    int count = dataChunk.datas.Keys.Count;
-        //    //dataGrid.Rows.Add(count);
-        //    int a = dataGrid.Rows.Add(count);
-        //    int addrMax = dataChunk.datas.Keys.Max();
-        //    int addr = (dataChunk.baseAddr << 16);
-        //    for (a = 0; a < count; a++, addr += dataCount)
-        //    {
-
-        //        //dataGrid.Rows[i].HeaderCell.Value = "0x" + addr.ToString("X8");
-        //        for (int j = 0; j < dataCount; j++)
-        //        {
-        //            if (addr < addrMax)
-        //            {
-        //                dataGrid.Rows[a].Cells[j].Value = dataChunk.datas[addr][j].ToString("X2");
-        //            }
-        //            else
-        //            {
-        //                break;
-        //            }
-
-        //        }
-        //    }
-        //    dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
-        //}
-
-        #endregion
         
         
     }
