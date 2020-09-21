@@ -525,6 +525,7 @@ namespace Bootloader
             {
                 if (commPro.PACKET_TYPE_FLAG.BAGLANTI_OK)
                 {
+                    commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = false;
                     Helper.stopWatch.Reset();
                     Helper.threadIsConnect.Abort();
                 }

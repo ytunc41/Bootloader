@@ -12,8 +12,14 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.5.3";
+            getVS = "v1.5.4";
         }
+
+        /* Versiyon: 1.5.4
+         * Tarih: 21.09.2020
+         * 
+         * - Bug fixed.
+         */
 
         /* Versiyon: 1.5.3
          * Tarih: 17.09.2020
