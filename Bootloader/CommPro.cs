@@ -80,12 +80,15 @@ namespace Bootloader
         PROGRAM_OK,
         PROGRAM_ERROR,
         PROGRAM_RUN,
-        READ_REQUEST,
+        MEMORY_DEVICE_REQUEST,
+        MEMORY_DEVICE_OK,
         READ_OK,
         READ_ERROR,
         ERASE_REQUEST,
         ERASE_OK,
-        ERASE_ERROR
+        ERASE_ERROR,
+        CRC_REQUEST,
+        CRC_OK
     }
 
     public class PACKET_TYPE_FLAG

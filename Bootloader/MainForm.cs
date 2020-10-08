@@ -105,7 +105,7 @@ namespace Bootloader
             Action actScroll = () =>
             {
                 rchtxtInfo.SelectionStart = rchtxtInfo.Text.Length;
-                rchtxtInfo.ScrollToCaret();
+               rchtxtInfo.ScrollToCaret();
             };
             return actScroll;
         }
@@ -123,7 +123,7 @@ namespace Bootloader
         {
             UINT8 paket_sayaci = 0;
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.READ_REQUEST;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.MEMORY_DEVICE_REQUEST;
 
             PaketGonder(commPro);
         }
@@ -155,7 +155,7 @@ namespace Bootloader
             Paket_Islemleri_LE.UINT32_ayir(ref SendPacket.data, ref paket_sayaci, fileChunk.CRC32);
 
             SendPacket.dataSize = paket_sayaci;
-            SendPacket.packetType = (UINT8)PACKET_TYPE.PROGRAM_OK;
+            SendPacket.packetType = (UINT8)PACKET_TYPE.CRC_REQUEST;
 
             PaketGonder(commPro);
         }
@@ -195,7 +195,7 @@ namespace Bootloader
         private void PaketCoz(UINT8[] data)
         {
             UINT8 VERI_BOYUTU = 0;
-            lock (seriport_rx)
+            lock (paket_coz)
             {
                 foreach (UINT8 byte_u8 in data)
                 {
@@ -316,7 +316,7 @@ namespace Bootloader
                                     commPro.PACKET_TYPE_FLAG.BAGLANTI_OK = true;
                                     break;
                                 }
-                            case (UINT8)PACKET_TYPE.READ_REQUEST:
+                            case (UINT8)PACKET_TYPE.MEMORY_DEVICE_OK:
                                 {
                                     Console.WriteLine("Veri Paketi: " + ++deviceMemory.paketCount);
                                     VeriPaketTopla();
@@ -521,6 +521,7 @@ namespace Bootloader
         private void IsConnect()
         {
             int timeout = 5000, timemin = 500;
+
             while (true)
             {
                 if (commPro.PACKET_TYPE_FLAG.BAGLANTI_OK)
@@ -671,6 +672,7 @@ namespace Bootloader
                     {
                         VeriPaketOlustur(addr);
                     }
+
                     CRCPaketOlustur();
                 }
                 else
