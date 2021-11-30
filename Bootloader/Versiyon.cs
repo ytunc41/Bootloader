@@ -12,8 +12,18 @@ namespace Bootloader
 
         static Versiyon()
         {
-            getVS = "v1.5.5";
+            getVS = "v2.0.0";
         }
+
+        /* Versiyon: 2.0.0
+         * Tarih:    1.12.2021
+         * Yazan:    Yusuf Tunc
+         * 
+         * Versiyon Aciklamalari:
+         * -----------------------------------------
+         * - gitignore duzenlendi.
+         * - Gelistirme branch'i olusturuldu.
+         */
 
         /* Versiyon: 1.5.5
          * Tarih: 09.10.2020
